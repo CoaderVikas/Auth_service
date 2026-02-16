@@ -1,0 +1,8 @@
+#server port configuration
+server:
+  port: 9092
+
+#application name configiration
+spring:
+  application:
+    name: Auth_service
