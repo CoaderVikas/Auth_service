@@ -7,6 +7,7 @@ import com.vikas.auth.dto.LoginRequest;
 import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.entity.UserEntity;
+import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repositoy.UserRepository;
 import com.vikas.auth.security.JwtProvider;
 import com.vikas.auth.service.AuthService;
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 	public LoginResponse register(RegisterRequest request) {
 		// 1 check if user exit
 		if (userRepository.existsByUsername(request.getUsername())) {
-			throw new RuntimeException("Username already exists");
+			throw new AuthServiceException("Username already exists");
 		}
 
 		// 2. create user
@@ -57,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
 		
 		//2.check if password is correct or not 
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-	            throw new RuntimeException("Invalid username or password");
+	            throw new AuthServiceException("Invalid username or password");
 	        }
 		
 		//3.generate token and return response

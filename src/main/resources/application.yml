@@ -2,7 +2,67 @@
 server:
   port: 9092
 
+#profile configuration
+profiles:
+    active: local
+
 #application name configiration
 spring:
   application:
     name: Auth_service
+
+#Oracle configuration
+  datasource:
+    url: ${datasource.url}
+    username: ${datasource.username}
+    password: ${datasource.password}
+    driver-class-name: ${datasource.driver-class-name}
+
+#jpa configuration
+  jpa:
+    show-sql: ${jpa.show-sql}
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: ${jpa.properties.hibernate.format_sql}
+
+  config.import:
+  - optional:configserver:http://localhost:9092
+
+#admin client configuration
+  boot:
+    admin:
+     client:
+        url: http://localhost:9095
+        instance:
+          prefer-ip: true
+
+#Eureca configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    heapdump:
+      enabled: true
+    threaddump:
+      enabled: true
+    logfile:
+      enabled: true
+    env:
+      enabled: true
+    loggers:
+      enabled: true
+
+
+#jwt configuration
+jwt:
+   secret : ${JWT_SECRET}
+   expiration : 1000 * 60 * 60
+

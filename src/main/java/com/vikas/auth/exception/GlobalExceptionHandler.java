@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Object>> handleException(Exception ex) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
 	}
+	
+	@ExceptionHandler(AuthServiceException.class)
+	public ResponseEntity<ApiResponse<Object>> handleAuthServiceException(AuthServiceException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(ex.getMessage()));
+	}
 }
