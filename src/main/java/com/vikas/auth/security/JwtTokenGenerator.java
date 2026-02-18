@@ -22,13 +22,13 @@ import jakarta.annotation.PostConstruct;
  */
 
 @Component
-public class JwtProvider {
+public class JwtTokenGenerator {
 
 	@Value("${jwt.secret}")
 	private String secret;
 	
-	@Value("${jwt.expiration}")
-	private String expiration;
+	//@Value("${jwt.expiration}")
+	private Long expiration = 1000L * 60 * 60;
 	
 	private SecretKey signingKey;
 	
@@ -42,6 +42,6 @@ public class JwtProvider {
 	public String generateToken(String username, String role) {
 		return Jwts.builder().setSubject(username).claim("role", role).setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + expiration))
-				.signWith(signingKey, SignatureAlgorithm.HS512).compact();
+				.signWith(signingKey, SignatureAlgorithm.HS256).compact();
 	}
 }

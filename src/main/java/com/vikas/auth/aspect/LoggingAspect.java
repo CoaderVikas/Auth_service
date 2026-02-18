@@ -25,7 +25,7 @@ public class LoggingAspect {
 		    "execution(* com.vikas.auth.service..*(..)) || " +
 		    "execution(* com.vikas.auth.repository..*(..)) || " +
 		    "execution(* com.vikas.auth.config..*(..)) || " +
-		    "execution(* com.vikas.auth.sequrity..*(..)) || " +
+		    "execution(* com.vikas.auth.security..*(..)) || " +
 		    "execution(* com.vikas.auth.controller..*(..))"
 		)
 	public Object trackMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {

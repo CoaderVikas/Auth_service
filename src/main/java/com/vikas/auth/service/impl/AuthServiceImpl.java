@@ -9,7 +9,7 @@ import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repositoy.UserRepository;
-import com.vikas.auth.security.JwtProvider;
+import com.vikas.auth.security.JwtTokenGenerator;
 import com.vikas.auth.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
+    private final JwtTokenGenerator jwtProvider;
     
 	@Override
 	public LoginResponse register(RegisterRequest request) {

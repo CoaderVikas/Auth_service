@@ -27,11 +27,14 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
 				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/auth/****")
-						.permitAll()
+						auth -> auth.requestMatchers("/api/auth/****").permitAll()
+						.requestMatchers("/swagger-ui/**").permitAll()
+						.requestMatchers("/v3/api-docs/**").permitAll()
+			            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+			            .requestMatchers("/api/user/**").hasRole("USER")
 						.anyRequest()
 						.authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -41,12 +44,12 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public PasswordEncoder passwordEncoder() {
+	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 

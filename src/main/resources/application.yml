@@ -1,6 +1,6 @@
 #server port configuration
 server:
-  port: 9092
+  port: 9091
 
 #profile configuration
 profiles:
@@ -31,12 +31,12 @@ spring:
   - optional:configserver:http://localhost:9092
 
 #admin client configuration
-  boot:
-    admin:
-     client:
-        url: http://localhost:9095
-        instance:
-          prefer-ip: true
+#  boot:
+ #   admin:
+  #   client:
+   #     url: http://localhost:9095
+    #    instance:
+     #     prefer-ip: true
 
 #Eureca configuration
 management:
@@ -64,5 +64,5 @@ management:
 #jwt configuration
 jwt:
    secret : ${JWT_SECRET}
-   expiration : 1000 * 60 * 60
+   #//expiration : 1000 * 60 * 60
 
