@@ -9,7 +9,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "✅ Checking out source code"
-                git branch: 'feature-dev', url: 'https://github.com/CoaderVikas/Auth_service.git'
+                git branch: 'feature_dev', url: 'https://github.com/CoaderVikas/Auth_service.git'
             }
         }
 
