@@ -1,19 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // Java version used by Spring Boot
-        jdk 'Java17'
-    }
-
-    environment {
-        // Agar aapko additional env variables set karne ho (optional)
-        // Example: DB_USER, DB_PASSWORD, DB_HOST etc.
-        // In your case, configuration already Git se read ho rahi hai
-        // DB_USER = 'admin'
-        // DB_PASSWORD = 'secret'
-    }
-
     stages {
 
         stage('Checkout') {
@@ -26,7 +13,6 @@ pipeline {
         stage('Build') {
             steps {
                 echo "📦 Building Spring Boot project with Gradle (tests skipped)"
-                // Skip tests for deploy
                 bat 'gradlew.bat clean build -x test --stacktrace --info'
             }
         }
@@ -45,20 +31,6 @@ pipeline {
                 '''
             }
         }
-
-        // Optional: DB Check (uncomment if needed)
-        /*
-        stage('DB Check') {
-            steps {
-                echo "🔍 Checking Oracle DB connectivity"
-                bat '''
-                sqlplus -S $DB_USER/$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_SERVICE << EOF
-                exit
-                EOF
-                '''
-            }
-        }
-        */
     }
 
     post {
