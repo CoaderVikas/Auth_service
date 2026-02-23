@@ -33,6 +33,7 @@ public class SecurityConfig {
 						auth -> auth.requestMatchers("/api/auth/****").permitAll()
 						.requestMatchers("/swagger-ui/**").permitAll()
 						.requestMatchers("/v3/api-docs/**").permitAll()
+						.requestMatchers("/instances/**").permitAll()
 			            .requestMatchers("/api/admin/**").hasRole("ADMIN")
 			            .requestMatchers("/api/user/**").hasRole("USER")
 						.anyRequest()

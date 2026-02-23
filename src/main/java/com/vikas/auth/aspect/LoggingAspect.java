@@ -26,7 +26,8 @@ public class LoggingAspect {
 		    "execution(* com.vikas.auth.repository..*(..)) || " +
 		    "execution(* com.vikas.auth.config..*(..)) || " +
 		    "execution(* com.vikas.auth.security..*(..)) || " +
-		    "execution(* com.vikas.auth.controller..*(..))"
+		    "execution(* com.vikas.auth.controller..*(..))"+
+		    "execution(* com.vikas.auth.schedular..*(..))"
 		)
 	public Object trackMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
 		String className = joinPoint.getTarget().getClass().getSimpleName();

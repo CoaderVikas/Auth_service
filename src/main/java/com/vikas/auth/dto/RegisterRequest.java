@@ -1,7 +1,7 @@
 package com.vikas.auth.dto;
 
-import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
 /**
  * Class      : RegisterRequest
@@ -17,5 +17,7 @@ public class RegisterRequest {
     private String username;
     @NotBlank
     private String password;
+    @NotBlank
+    private String email;
     private String role; // optional, default ROLE_USER
 }

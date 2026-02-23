@@ -38,7 +38,6 @@ spring:
     #    instance:
      #     prefer-ip: true
 
-#Eureca configuration
 management:
   endpoints:
     web:

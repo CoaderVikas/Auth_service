@@ -1,46 +1,77 @@
 package com.vikas.auth.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 /**
  * Class      : UserEntity
- * Description: [Add brief description here]
+ * Description: Stores permanent authentication and security state
  * Author     : Vikas Yadav
- * Created On : Feb 17, 2026
- * Version    : 1.0
+ * Version    : 3.0 (Production Ready)
  */
 
-
 @Entity
-@Setter
 @Getter
-@ToString
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "APP_USERS")
+@Table(name = "APP_USERS",
+       indexes = {
+           @Index(name = "IDX_USERNAME", columnList = "username")
+       })
 public class UserEntity extends AuditableEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 
-	@Column(unique = true, nullable = false)
-	private String username;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private String password;
+    // ================= BASIC AUTH =================
 
-	@Column(nullable = false)
-	private String role; // e.g., ROLE_USER, ROLE_ADMIN
+    @Column(nullable = false, unique = true, length = 100)
+    private String username;
+
+    @Column(nullable = false)
+    private String password; // Always store hashed password
+    
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false, length = 50)
+    private String role; // ROLE_USER / ROLE_ADMIN
+
+
+    // ================= PASSWORD CONTROL =================
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer passwordVersion = 1;
+
+    @Column(nullable = false)
+    private LocalDateTime passwordLastUpdatedAt;
+
+
+    // ================= ACCOUNT SECURITY =================
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean accountNonLocked = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean enabled = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+    
+    @Column
+    private LocalDateTime accountLockedAt;
+
+    // ================= OPTIMISTIC LOCKING =================
+
+    @Version
+    private Long version;   // Prevents concurrent update issues
 }
