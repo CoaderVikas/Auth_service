@@ -13,11 +13,13 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    @NotBlank
-    private String username;
-    @NotBlank
-    private String password;
-    @NotBlank
-    private String email;
-    private String role; // optional, default ROLE_USER
+	@NotBlank
+	private String fullName;
+	@NotBlank
+	private String username;
+	@NotBlank
+	private String password;
+	@NotBlank
+	private String email;
+	private String role; // optional, default ROLE_USER
 }

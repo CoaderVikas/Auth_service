@@ -29,6 +29,8 @@ public class UserEntity extends AuditableEntity {
     private Long id;
 
     // ================= BASIC AUTH =================
+    @Column(nullable = false, length = 100)
+    private String fullName;
 
     @Column(nullable = false, unique = true, length = 100)
     private String username;
@@ -36,7 +38,7 @@ public class UserEntity extends AuditableEntity {
     @Column(nullable = false)
     private String password; // Always store hashed password
     
-    @Column(nullable = false)
+    @Column(unique = true,nullable = false)
     private String email;
 
     @Column(nullable = false, length = 50)

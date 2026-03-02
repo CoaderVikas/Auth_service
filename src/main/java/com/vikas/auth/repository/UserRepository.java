@@ -30,4 +30,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 	 * @return
 	 */
     boolean existsByUsername(String username);
+    
+    /**
+     * 
+     * @param email
+     * @return
+     */
+    boolean existsByEmail(String email);
 }

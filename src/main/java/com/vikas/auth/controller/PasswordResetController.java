@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/rent-hub/auth/password")
 @RequiredArgsConstructor
 @Tag(name = "Password Reset APIs", description = "APIs for forgot password and reset password using OTP")
 public class PasswordResetController {
@@ -27,7 +27,7 @@ public class PasswordResetController {
     private final PasswordResetService authService;
 
     
-    @PostMapping(value = "/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/forgot", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Request Password Reset OTP", description = "Generates a OTP for the given username to reset password")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "OTP generated successfully and sent via email/SMS"),
@@ -37,14 +37,14 @@ public class PasswordResetController {
     public ResponseEntity<String> generateOtp(@RequestParam(name = "username") String username) {
         try {
             authService.generateResetOtp(username);
-            return ResponseEntity.ok("OTP generated successfully. Please check your email/SMS.");
+            return ResponseEntity.ok("OTP sent to your registered email...");
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
    
-    @PostMapping(value = "/reset-password", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Reset Password", description = "Resets password using OTP. Requires username, OTP, and new password")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Password reset successfully"),

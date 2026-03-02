@@ -1,7 +1,7 @@
 package com.vikas.auth.util;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Class      : ApiResponse
@@ -12,17 +12,15 @@ import lombok.Data;
  */
 
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ApiResponse<T> {
-    private boolean success;
-    private T data;
-    private String message;
+    private final String message;
 
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, data, null);
+    public static <T> ApiResponse<T> success(String message) {
+        return new ApiResponse<>(message);
     }
 
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, null, message);
+        return new ApiResponse<>(message);
     }
 }

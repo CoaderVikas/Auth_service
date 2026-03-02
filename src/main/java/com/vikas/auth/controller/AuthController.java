@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
  */
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/rent-hub/auth/auth")
 @RequiredArgsConstructor
 @Tag(
 	    name = "Auth APIs",
@@ -38,29 +38,27 @@ import lombok.RequiredArgsConstructor;
 	)
 public class AuthController {
 
-    private final AuthService authService;
+	private final AuthService authService;
 
-    @PostMapping(value = "/register",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Register User", description = "register new user and return back response with jwt token")
-  	@ApiResponses({ @ApiResponse(responseCode = "201", description = "User Added"),
-  					@ApiResponse(responseCode = "400", description = "Invalid request data"),
-  					@ApiResponse(responseCode = "500", description = "Internal server error") })
+	@PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Register User", description = "register new user and return back response with jwt token")
+	@ApiResponses({ 
+			@ApiResponse(responseCode = "201", description = "User Added"),
+			@ApiResponse(responseCode = "400", description = "Invalid request data"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
 		LoginResponse register = authService.register(request);
-		return Objects.nonNull(register) ? 
-								ResponseEntity.ok(register) : 
-								ResponseEntity.internalServerError().build();
+		return Objects.nonNull(register) ? ResponseEntity.ok(register) : ResponseEntity.internalServerError().build();
 	}
 
-    @PostMapping(value = "/login",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Login User", description = "check user credentials and return back response with jwt token")
-  	@ApiResponses({ @ApiResponse(responseCode = "201", description = "User Added"),
-  					@ApiResponse(responseCode = "400", description = "Invalid request data"),
-  					@ApiResponse(responseCode = "500", description = "Internal server error") })
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse login = authService.login(request);
-		return Objects.nonNull(login) ? 
-								ResponseEntity.ok(login) : 
-								ResponseEntity.internalServerError().build();
+	@PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Login User", description = "check user credentials and return back response with jwt token")
+	@ApiResponses({ 
+			@ApiResponse(responseCode = "201", description = "User Added"),
+			@ApiResponse(responseCode = "400", description = "Invalid request data"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+		LoginResponse login = authService.login(request);
+		return Objects.nonNull(login) ? ResponseEntity.ok(login) : ResponseEntity.internalServerError().build();
 	}
 }

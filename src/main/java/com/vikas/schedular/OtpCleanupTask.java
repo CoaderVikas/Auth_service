@@ -24,9 +24,9 @@ public class OtpCleanupTask {
     private final UserOtpRepository userOtpRepository;
 
     // Run every day at 2 AM
-    @Scheduled(cron = "0 00 2 * * ?")
+    @Scheduled(cron = "0 38 12 * * ?")
     public void cleanupOldOtps() {
-    	LocalDateTime expiryTime = LocalDateTime.now().minusHours(24);
+    	LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(1);
         userOtpRepository.deleteOldOtps(expiryTime);
         System.out.println("Old/used OTPs cleanup executed at " + LocalDateTime.now());
     }

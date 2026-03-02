@@ -43,14 +43,14 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 	MailRequest mailRequest=null;
 
 	SecureRandom random = new SecureRandom();
-	String otp = String.format("%06d", random.nextInt(1000000));
 
 	@Override
 	@Transactional
 	public void generateResetOtp(String username) {
+		String newotp = String.format("%06d", random.nextInt(1000000));
 		//1. check if user exist
 		UserEntity user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new RuntimeException("User not found"));
+				.orElseThrow(() -> new AuthServiceException("Incorrect User please enter valid username"));
 
 		//2. check is user account is desable
 		if (!user.getEnabled())
@@ -71,16 +71,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 		recentOtps.forEach(otp -> otp.setUsed(true));
 
 		//5. Generate new OTP
-		UserOtpEntity otpEntity = UserOtpEntity.builder().user(user).otp(passwordEncoder.encode(otp)) // hashed
+		UserOtpEntity otpEntity = UserOtpEntity.builder().user(user).otp(passwordEncoder.encode(newotp)) // hashed
 				.purpose("RESET_PASSWORD").createdAt(LocalDateTime.now())
 				.expiryTime(LocalDateTime.now().plusMinutes(ConstantsUtils.OTP_EXPIRY_MINUTES)).attemptCount(0).used(false).build();
 		userOtpRepository.save(otpEntity);
 
 		//6. TODO: Send OTP via Email/SMS
 		// Prepare Mail Request
-		mailRequest = prepareMail(user);
 		
-		System.err.println("OTP for " + username + ": " + otp);
+		mailRequest = prepareMail(user,newotp);
+		
+		System.err.println("OTP for " + username + ": " + newotp);
 		
 		// Call Mailer Service
 		MailResponse response = mailerFeignClient.sendMail(mailRequest);
@@ -150,7 +151,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 	    userOtpRepository.save(otp);
 
 	    // 9️ Return success response
-	    return PasswordResetResponse.builder().success(true).message("Password reset successfully").build();
+	    return PasswordResetResponse.builder().success(true).message("Password reset successfully please login again").build();
 	}
 
 	public void incrementFailedLogin(UserEntity user) {
@@ -177,7 +178,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 		}
 	}
 	
-	private MailRequest prepareMail(UserEntity user) {
+	private MailRequest prepareMail(UserEntity user,String otp) {
 		return MailRequest.builder()
 				.to(user.getEmail())
 				.toName(user.getUsername())
