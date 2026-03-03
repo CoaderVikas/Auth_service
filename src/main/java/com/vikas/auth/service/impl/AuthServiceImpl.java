@@ -11,9 +11,9 @@ import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.entity.RefreshTokenEntity;
 import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.exception.AuthServiceException;
+import com.vikas.auth.jwt.JwtService;
 import com.vikas.auth.repository.RefreshTokenRepository;
 import com.vikas.auth.repository.UserRepository;
-import com.vikas.auth.security.JwtTokenGenerator;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.util.ConstantsUtils;
 
@@ -23,12 +23,12 @@ import lombok.RequiredArgsConstructor;
 /**
  * AuthServiceImpl
  *
- * Responsibilities:
- * 1. User Registration
- * 2. Login (Access + Refresh Token generation)
- * 3. Failed login tracking & auto-lock
- * 4. Refresh token rotation
- * 5. Logout (token revocation)
+ * Responsibilities: 
+ * 1. User Registration 
+ * 2. Login (Access + Refresh Token generation) 
+ * 3. Failed login tracking & auto-lock 
+ * 4. Refresh token rotation 
+ * 5.Logout (token revocation)
  *
  * Author: Vikas Yadav
  */
@@ -38,10 +38,10 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenGenerator jwtProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtService jwtProvider;
+	private final RefreshTokenRepository refreshTokenRepository;
 
 	/**
 	 * Register new user
@@ -53,9 +53,9 @@ public class AuthServiceImpl implements AuthService {
 		if (userRepository.existsByUsername(request.getUsername())) {
 			throw new AuthServiceException("Username already exists");
 		}
-		
+
 		if (userRepository.existsByEmail(request.getEmail())) {
-		    throw new AuthServiceException("Email already registered");
+			throw new AuthServiceException("Email already registered");
 		}
 
 		// 2️⃣ Create new user entity
@@ -71,14 +71,14 @@ public class AuthServiceImpl implements AuthService {
 		// 3️⃣ Generate tokens
 		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
 
-		//String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
+		// String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
 		// 4️⃣ Save refresh token in DB
-		//saveRefreshToken(user, refreshToken);
+		// saveRefreshToken(user, refreshToken);
 
 		// 5️⃣ Return response
 		return LoginResponse.builder().token(accessToken).username(user.getUsername())
-				.role(user.getRole()).build();
+				.message("Accout created successfully").role(user.getRole()).build();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	/**
-	 * Refresh access token (WITH ROTATION 🔥)
+	 * Refresh access token (WITH ROTATION)
 	 */
 	public LoginResponse refreshToken(String refreshToken) {
 
@@ -129,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
 
 		UserEntity user = storedToken.getUser();
 
-		// 🔥 ROTATION: revoke old refresh token
+		// revoke old refresh token
 		storedToken.setRevoked(true);
 		refreshTokenRepository.save(storedToken);
 

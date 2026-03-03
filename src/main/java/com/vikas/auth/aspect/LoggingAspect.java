@@ -2,7 +2,9 @@ package com.vikas.auth.aspect;
 
 import java.util.Arrays;
 
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
@@ -45,5 +47,11 @@ public class LoggingAspect {
 			log.error("**** ERROR | {}.{}() | exception={}", className, methodName, e.getMessage(), e);
 			throw e;
 		}
+	}
+	
+	@AfterThrowing(pointcut = "execution(* com.vikas.auth.service.*.*(..))", throwing = "ex")
+	public void logServiceError(JoinPoint joinPoint, Exception ex) {
+	    // Service layer ke error logging ko hata dein ya comment kar dein
+	    // Taaki sirf Controller wala error hi dikhe
 	}
 }

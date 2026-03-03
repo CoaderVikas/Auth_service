@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		logger.info("🔹 Incoming request path: {}", path);
 
 		// 1️⃣ Skip public endpoints
-		if (path.startsWith("/rent-hub/auth/Password/") || path.startsWith("/rent-hub/auth/auth/")
+		if (path.startsWith("/rent-hub/auth/password/") || path.startsWith("/rent-hub/auth/auth/")
 				|| path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")) {
 			logger.info("🔹 Public endpoint accessed, skipping JWT validation");
 			filterChain.doFilter(request, response);

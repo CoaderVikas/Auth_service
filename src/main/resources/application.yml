@@ -1,43 +1,65 @@
-#server port configuration
+# Server Port Configuration
 server:
   port: 9091
 
-#profile configuration
-profiles:
-    active: local
+error:
+  include-stacktrace: never   # API response mein lamba error nahi dikhega
+  include-message: always
 
-#application name configiration
+# Profile Configuration
 spring:
+  profiles:
+    active: local
   application:
     name: Auth_service
 
-#Oracle configuration
+  # Oracle & Datasource Configuration
   datasource:
     url: ${datasource.url}
     username: ${datasource.username}
     password: ${datasource.password}
     driver-class-name: ${datasource.driver-class-name}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 30000
+      pool-name: AuthHikariCP
+      connection-timeout: 10000 # Startup delay kam karne ke liye
+      initialization-fail-timeout: 0
 
-#jpa configuration
+  # JPA & Hibernate Optimization
   jpa:
     show-sql: ${jpa.show-sql}
+    database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: ${jpa.properties.hibernate.format_sql}
+        boot.allow_jdbc_metadata_access: false
+        default_schema: SYSTEM 
+        jdbc.fetch_size: 100
+        transaction.jta.platform: org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform
 
-  config.import:
-  - optional:configserver:http://localhost:9092
+  # JPA Bootstrap mode 
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
 
-#admin client configuration
-#  boot:
- #   admin:
-  #   client:
-   #     url: http://localhost:9095
-    #    instance:
-     #     prefer-ip: true
+  config:
+    import:
+      - optional:configserver:http://localhost:9092
 
+# Logging Configuration (Colorful + Short Error Logs)
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level) %clr([%thread]){magenta} %clr(%logger{36}){cyan} : %msg%n%wEx{1}"
+  level:
+    root: INFO
+    org.hibernate.orm.connections.pooling: ERROR # Faltu pooling logs band karne ke liye
+
+# Management / Actuator Configuration
 management:
   endpoints:
     web:
@@ -48,22 +70,9 @@ management:
       show-details: always
     metrics:
       enabled: true
-    heapdump:
-      enabled: true
-    threaddump:
-      enabled: true
-    logfile:
-      enabled: true
-    env:
-      enabled: true
-    loggers:
-      enabled: true
 
-
-#jwt configuration
+# JWT Configuration
 jwt:
    secret : ${JWT_SECRET}
    expiration : 3600000
    issuer : vikas-app
-   #//expiration : 1000 * 60 * 60
-

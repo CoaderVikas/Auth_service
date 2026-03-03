@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponse {
+	private String message;
     private String token;
     private String refreshToken;
     private String username;
