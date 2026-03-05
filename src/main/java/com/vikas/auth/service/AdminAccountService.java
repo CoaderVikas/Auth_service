@@ -1,5 +1,9 @@
 package com.vikas.auth.service;
 
+import org.springframework.data.domain.Page;
+
+import com.vikas.auth.dto.AdminUserResponse;
+
 /**
  * Class      : AdminAccountService
  * Description: [Add brief description here]
@@ -17,4 +21,6 @@ public interface AdminAccountService {
 	void updateUserStatus(Long userId, boolean enabled);
 
 	void updateUserRole(Long userId, String role);
+	
+	Page<AdminUserResponse> getAllUsers(int page, int size);
 }

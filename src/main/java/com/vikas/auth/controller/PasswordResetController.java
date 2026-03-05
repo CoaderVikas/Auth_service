@@ -24,35 +24,30 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Password Reset APIs", description = "APIs for forgot password and reset password using OTP")
 public class PasswordResetController {
 
-    private final PasswordResetService authService;
+	private final PasswordResetService passwordResetService;
 
-    
-    @PostMapping(value = "/forgot", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Request Password Reset OTP", description = "Generates a OTP for the given username to reset password")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "OTP generated successfully and sent via email/SMS"),
-        @ApiResponse(responseCode = "400", description = "Invalid username or too many OTP requests"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<String> generateOtp(@RequestParam(name = "username") String username) {
-        try {
-            authService.generateResetOtp(username);
-            return ResponseEntity.ok("OTP sent to your registered email...");
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
-    }
+	@PostMapping(value = "/forgot", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Request Password Reset OTP", description = "Generates a OTP for the given username to reset password")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "OTP generated successfully and sent via email/SMS"),
+			@ApiResponse(responseCode = "400", description = "Invalid username or too many OTP requests"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	public ResponseEntity<String> generateOtp(@RequestParam(name = "username") String username) {
+		try {
+			passwordResetService.generateResetOtp(username);
+			return ResponseEntity.ok("OTP sent to your registered email...");
+		} catch (RuntimeException ex) {
+			return ResponseEntity.badRequest().body(ex.getMessage());
+		}
+	}
 
-   
-    @PostMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Reset Password", description = "Resets password using OTP. Requires username, OTP, and new password")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Password reset successfully"),
-        @ApiResponse(responseCode = "400", description = "OTP invalid, expired, or maximum attempts exceeded"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<PasswordResetResponse> resetPassword(@RequestBody PasswordResetRequest request) {
-        PasswordResetResponse response = authService.resetPassword(request);
-        return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
-    }
+	@PostMapping(value = "/reset", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Reset Password", description = "Resets password using OTP. Requires username, OTP, and new password")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+			@ApiResponse(responseCode = "400", description = "OTP invalid, expired, or maximum attempts exceeded"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	public ResponseEntity<PasswordResetResponse> resetPassword(@RequestBody PasswordResetRequest request) {
+		PasswordResetResponse response = passwordResetService.resetPassword(request);
+		return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
+	}
 }

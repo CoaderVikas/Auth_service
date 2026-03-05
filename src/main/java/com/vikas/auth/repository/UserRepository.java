@@ -2,6 +2,8 @@ package com.vikas.auth.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -37,4 +39,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
      * @return
      */
     boolean existsByEmail(String email);
+    /**
+     * Admin Dashboard → Fetch all users with pagination
+     */
+    Page<UserEntity> findAll(Pageable pageable);
+
 }

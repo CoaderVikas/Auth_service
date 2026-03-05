@@ -76,4 +76,7 @@ public class UserEntity extends AuditableEntity {
 
     @Version
     private Long version;   // Prevents concurrent update issues
+    
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

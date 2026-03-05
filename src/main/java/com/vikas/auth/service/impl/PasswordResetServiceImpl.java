@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.vikas.auth.dto.ChangePasswordRequest;
+import com.vikas.auth.dto.ChangePasswordResponse;
 import com.vikas.auth.dto.MailRequest;
 import com.vikas.auth.dto.MailResponse;
 import com.vikas.auth.dto.PasswordResetRequest;
@@ -154,18 +156,77 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 	    return PasswordResetResponse.builder().success(true).message("Password reset successfully please login again").build();
 	}
 
+	@Override
+	@Transactional
+	public ChangePasswordResponse changePassword(String username, ChangePasswordRequest request) {
+
+		// 1️ Fetch user by username
+		// Throws exception if user not found
+		UserEntity user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new AuthServiceException("User not found = "+username));
+
+		// 2️ Check if account is enabled
+		if (!user.getEnabled()) {
+			return ChangePasswordResponse.builder().success(false).message("Account disabled").build();
+		}
+
+		// 3️ Check if account is locked
+		if (!user.getAccountNonLocked()) {
+			return ChangePasswordResponse.builder().success(false).message("Account locked").build();
+		}
+
+		// 4️ Verify current password
+		// If incorrect, increment failed login attempts
+		if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+			incrementFailedLogin(user);
+			return ChangePasswordResponse.builder().success(false).message("Incorrect current password ").build();
+		}
+
+		// 5️ Encode and update new password
+		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+		// 6️ Increment password version (for audit / history purposes)
+		user.setPasswordVersion(user.getPasswordVersion() + 1);
+
+		// 7️ Update last password change timestamp
+		user.setPasswordLastUpdatedAt(LocalDateTime.now());
+
+		// 8️ Reset failed login attempts after successful operation
+		user.setFailedLoginAttempts(0);
+
+		// 9️ Persist updated user entity
+		userRepository.save(user);
+
+		//  Return success response
+		return ChangePasswordResponse.builder().success(true).message("Password changed successfully").build();
+	}
+	
+	
+	/**
+	 * Increment failed login attempts for a user. Locks the account if maximum
+	 * allowed attempts are exceeded.
+	 *
+	 * @param user the UserEntity whose login attempts are being tracked
+	 */
 	public void incrementFailedLogin(UserEntity user) {
+
+		// 1️ Increment failed login attempts
 		int attempts = user.getFailedLoginAttempts() + 1;
 		user.setFailedLoginAttempts(attempts);
 
+		// 2️ Check if failed attempts exceed maximum allowed
 		if (attempts >= ConstantsUtils.MAX_FAILED_LOGIN_ATTEMPTS) {
+			// a) Lock the user account
 			user.setAccountNonLocked(false);
-			user.setAccountLockedAt(LocalDateTime.now()); // mark lock time
+
+			// b) Record the lock timestamp (used for auto-unlock logic)
+			user.setAccountLockedAt(LocalDateTime.now());
 		}
 
+		// 3️ Persist updated user entity to database
 		userRepository.save(user);
 	}
-
+	
 	private void checkAndUnlock(UserEntity user) {
 		if (!user.getAccountNonLocked() && user.getAccountLockedAt() != null) {
 			LocalDateTime unlockTime = user.getAccountLockedAt().plusHours(24);

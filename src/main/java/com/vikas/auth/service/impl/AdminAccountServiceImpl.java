@@ -2,8 +2,13 @@ package com.vikas.auth.service.impl;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.vikas.auth.dto.AdminUserResponse;
 import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repository.UserRepository;
@@ -14,10 +19,9 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Class      : AdminAccountServiceImpl
- * Description: [Add brief description here]
+ * Description: Handles admin level user account operations
  * Author     : Vikas Yadav
- * Created On : Mar 1, 2026
- * Version    : 1.0
+ * Version    : 1.1
  */
 
 @Service
@@ -28,27 +32,49 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 	private final UserRepository userRepository;
 
 	/**
-	 * ========================================================= 1️⃣ Lock User
+	 * =========================================================
+	 * 1️⃣ Fetch All Users (Admin Dashboard) with Pagination
+	 * =========================================================
+	 */
+	@Override
+	public Page<AdminUserResponse> getAllUsers(int page, int size) {
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+		Page<UserEntity> users = userRepository.findAll(pageable);
+
+		return users.map(user -> AdminUserResponse.builder()
+				.id(user.getId())
+				.fullName(user.getFullName())
+				.username(user.getUsername())
+				.email(user.getEmail())
+				.role(user.getRole())
+				.enabled(user.getEnabled())
+				.accountNonLocked(user.getAccountNonLocked())
+				.failedLoginAttempts(user.getFailedLoginAttempts())
+				.accountLockedAt(user.getAccountLockedAt())
+				.createdAt(user.getCreatedDate()).build());
+	}
+	/**
+	 * =========================================================
+	 * 2️⃣ Lock User
 	 * =========================================================
 	 */
 	@Override
 	public void lockUser(Long userId) {
 
-		// Step 1: Fetch user
 		UserEntity user = getUser(userId);
 
-		// Step 2: Update lock fields
 		user.setAccountNonLocked(false);
 		user.setAccountLockedAt(LocalDateTime.now());
 
-		// Step 3: Save changes
 		userRepository.save(user);
-
-		// Step 4 (Recommended Future): Write audit log
 	}
 
 	/**
-	 *  2️⃣ Unlock User
+	 * =========================================================
+	 * 3️⃣ Unlock User
+	 * =========================================================
 	 */
 	@Override
 	public void unlockUser(Long userId) {
@@ -63,7 +89,9 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 	}
 
 	/**
-	 *3️⃣ Enable /Disable User 
+	 * =========================================================
+	 * 4️⃣ Enable / Disable User
+	 * =========================================================
 	 */
 	@Override
 	public void updateUserStatus(Long userId, boolean enabled) {
@@ -76,29 +104,33 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 	}
 
 	/**
-	 *  4️⃣ Update User Role 
+	 * =========================================================
+	 * 5️⃣ Update User Role
+	 * =========================================================
 	 */
 	@Override
 	public void updateUserRole(Long userId, String role) {
 
 		UserEntity user = getUser(userId);
 
-		// Step 1: Validate role
-		if (!role.equals("USER") && !role.equals("ADMIN")) {
+		// Validate role
+		if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN")) {
 			throw new AuthServiceException("Invalid role");
 		}
 
-		// Step 2: Update role
 		user.setRole(role);
 
-		// Step 3: Save
 		userRepository.save(user);
 	}
 
 	/**
+	 * =========================================================
 	 * Common method to fetch user safely
+	 * =========================================================
 	 */
 	private UserEntity getUser(Long userId) {
-		return userRepository.findById(userId).orElseThrow(() -> new AuthServiceException("User not found"));
+
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new AuthServiceException("User not found"));
 	}
 }
