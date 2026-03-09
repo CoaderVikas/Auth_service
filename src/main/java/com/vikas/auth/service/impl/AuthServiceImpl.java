@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.vikas.auth.dto.LoginRequest;
 import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.MailRequest;
-import com.vikas.auth.dto.MailResponse;
 import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.entity.RefreshTokenEntity;
 import com.vikas.auth.entity.UserEntity;
@@ -18,7 +17,9 @@ import com.vikas.auth.repository.RefreshTokenRepository;
 import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.util.ConstantsUtils;
+import com.vikas.event.UserRegisteredEvent;
 import com.vikas.feign.MailerFeignClient;
+import com.vikas.kafka.producer.UserEventProducer;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
-	private final MailerFeignClient mailerFeignClient;
+	private final UserEventProducer userEventProducer;
 
 	@Override
 	public LoginResponse register(RegisterRequest request) {
@@ -76,23 +77,17 @@ public class AuthServiceImpl implements AuthService {
 
 		userRepository.save(user);
 		log.info("User registered successfully | username={}, email={}", user.getUsername(), user.getEmail());
+		try {
 
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
+		    UserRegisteredEvent event =
+		            new UserRegisteredEvent(user.getEmail(), user.getFullName());
 
-		// Send welcome email
-		/*try {
-			MailRequest mailRequest = prepareWelcomeMail(user);
-			MailResponse mailResponse = mailerFeignClient.sendMail(mailRequest);
-			if (mailResponse.isSuccess()) {
-				log.info("Welcome email sent successfully | username={}, email={}", user.getUsername(),
-						user.getEmail());
-			} else {
-				log.error("Failed to send welcome email | username={}, email={}", user.getUsername(), user.getEmail());
-			}
+		    userEventProducer.sendUserRegisteredEvent(event);
+
 		} catch (Exception e) {
-			log.error("Exception sending welcome email | username={}, email={}, error={}", user.getUsername(),
-					user.getEmail(), e.getMessage(), e);
-		}*/
+		    log.error("Failed to publish user registration event | email={}", user.getEmail(), e);
+		}
+		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
 
 		return LoginResponse.builder().token(accessToken).username(user.getUsername())
 				.message("Account created successfully").role(user.getRole()).build();
@@ -190,15 +185,5 @@ public class AuthServiceImpl implements AuthService {
 		token.setRevoked(true);
 		refreshTokenRepository.save(token);
 		log.info("User logged out successfully | username={}", token.getUser().getUsername());
-	}
-
-	private MailRequest prepareWelcomeMail(UserEntity user) {
-		return MailRequest.builder().to(user.getEmail()).toName(user.getFullName()).subject("Welcome to Our App!")
-				.templateName("welcome")
-				.body("Hello " + user.getFullName() + ",\n\n"
-						+ "Welcome to Our App! We're excited to have you on board. "
-						+ "Get started by exploring our features and managing your profile.\n\n"
-						+ "Happy journey,\nThe App Team")
-				.actionUrl("https://yourapp.com/dashboard").build();
 	}
 }

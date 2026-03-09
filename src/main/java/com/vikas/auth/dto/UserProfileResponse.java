@@ -2,8 +2,10 @@ package com.vikas.auth.dto;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Class      : UserProfileResponse
@@ -15,6 +17,8 @@ import lombok.Data;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserProfileResponse {
     private String fullName;
     private String username;
