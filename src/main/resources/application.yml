@@ -3,7 +3,7 @@ server:
   port: 9091
 
 error:
-  include-stacktrace: never   # API response mein lamba error nahi dikhega
+  include-stacktrace: never   # API response sort msg
   include-message: always
 
 # Profile Configuration
@@ -11,14 +11,14 @@ spring:
   profiles:
     active: local
   application:
-    name: Auth_service
+    name: AUTH-SERVICE
 
 # Oracle & Datasource Configuration
   datasource:
-    url: jdbc:oracle:thin:@127.0.0.1:1521/orcl
-    username: system
-    password: manager
-    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${datasource.url}
+    username: ${datasource.username}
+    password: ${datasource.password}
+    driver-class-name: ${datasource.driver-class-name}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 10
