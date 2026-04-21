@@ -1,6 +1,8 @@
 package com.vikas.auth.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.vikas.auth.dto.AdminUserResponse;
+import com.vikas.auth.dto.PaginatedUserResponse;
 import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repository.UserRepository;
@@ -37,23 +40,21 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 	 * =========================================================
 	 */
 	@Override
-	public Page<AdminUserResponse> getAllUsers(int page, int size) {
+	public PaginatedUserResponse getAllUsers(int page, int size) {
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
 
-		Page<UserEntity> users = userRepository.findAll(pageable);
+		// 2. Database fetch
+		Page<UserEntity> userPage = userRepository.findAll(pageable);
 
-		return users.map(user -> AdminUserResponse.builder()
-				.id(user.getId())
-				.fullName(user.getFullName())
-				.username(user.getUsername())
-				.email(user.getEmail())
-				.role(user.getRole())
-				.enabled(user.getEnabled())
-				.accountNonLocked(user.getAccountNonLocked())
-				.failedLoginAttempts(user.getFailedLoginAttempts())
-				.accountLockedAt(user.getAccountLockedAt())
-				.createdAt(user.getCreatedDate()).build());
+		// 3. Mapping logic 
+		List<AdminUserResponse> mappedUsers = userPage.getContent().stream().map(this::convertToAdminResponse)
+				.collect(Collectors.toList());
+
+		// 4. Return simplified response
+		return PaginatedUserResponse.builder().users(mappedUsers).totalElements(userPage.getTotalElements())
+				.totalPages(userPage.getTotalPages()).currentPage(userPage.getNumber()).isLast(userPage.isLast())
+				.build();
 	}
 	/**
 	 * =========================================================
@@ -132,5 +133,13 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
 		return userRepository.findById(userId)
 				.orElseThrow(() -> new AuthServiceException("User not found"));
+	}
+	
+	private AdminUserResponse convertToAdminResponse(UserEntity user) {
+		return AdminUserResponse.builder()
+				.id(user.getId()).fullName(user.getFullName()).username(user.getUsername())
+				.email(user.getEmail()).role(user.getRole()).enabled(user.getEnabled())
+				.accountNonLocked(user.getAccountNonLocked()).failedLoginAttempts(user.getFailedLoginAttempts())
+				.accountLockedAt(user.getAccountLockedAt()).createdAt(user.getCreatedDate()).build();
 	}
 }

@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
 		userRepository.save(user);
 
 		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
-		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
+		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, refreshToken);
 
 		log.info("Login successful | username={}, role={}", user.getUsername(), user.getRole());
@@ -146,7 +146,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String newAccessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(),
 				user.getPasswordVersion());
-		String newRefreshToken = jwtProvider.generateRefreshToken(user.getUsername());
+		String newRefreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, newRefreshToken);
 
 		log.info("Refresh token rotated successfully | username={}", user.getUsername());

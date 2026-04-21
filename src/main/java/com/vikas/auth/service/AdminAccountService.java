@@ -1,8 +1,6 @@
 package com.vikas.auth.service;
 
-import org.springframework.data.domain.Page;
-
-import com.vikas.auth.dto.AdminUserResponse;
+import com.vikas.auth.dto.PaginatedUserResponse;
 
 /**
  * Class      : AdminAccountService
@@ -22,5 +20,5 @@ public interface AdminAccountService {
 
 	void updateUserRole(Long userId, String role);
 	
-	Page<AdminUserResponse> getAllUsers(int page, int size);
+	public PaginatedUserResponse getAllUsers(int page, int size);
 }

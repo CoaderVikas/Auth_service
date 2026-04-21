@@ -51,7 +51,7 @@ public class JWTController {
 	@Operation(summary = "Logout User", description = "Revoke the refresh token to logout the user")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "User logged out successfully"),
 			@ApiResponse(responseCode = "400", description = "Invalid refresh token") })
-	public ResponseEntity<?> logout(@Valid @RequestBody RefreshRequest request) {
+	public ResponseEntity<String> logout(@Valid @RequestBody RefreshRequest request) {
 		authService.logout(request.getRefreshToken());
 		return ResponseEntity.ok().body("{\"message\":\"Logged out successfully\"}");
 	}

@@ -84,12 +84,12 @@ public class JwtService {
 	 * @param username
 	 * @return
 	 */
-	public String generateRefreshToken(String username) {
+	public String generateRefreshToken(String username,String role) {
 
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + (1000L * 60 * 60 * 24 * 7)); // 7 days
 
-		return Jwts.builder().setSubject(username).setIssuedAt(now).setExpiration(expiryDate).claim("type", "REFRESH")
+		return Jwts.builder().setSubject(username).setIssuedAt(now).setExpiration(expiryDate).claim("type", "REFRESH").claim("role", role)
 				.signWith(signingKey, SignatureAlgorithm.HS256).compact();
 	}
 	
