@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.vikas.auth.dto.LoginRequest;
 import com.vikas.auth.dto.LoginResponse;
-import com.vikas.auth.dto.MailRequest;
 import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.entity.RefreshTokenEntity;
 import com.vikas.auth.entity.UserEntity;
@@ -18,7 +17,6 @@ import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.util.ConstantsUtils;
 import com.vikas.event.UserRegisteredEvent;
-import com.vikas.feign.MailerFeignClient;
 import com.vikas.kafka.producer.UserEventProducer;
 
 import jakarta.transaction.Transactional;

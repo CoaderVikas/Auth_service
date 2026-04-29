@@ -21,9 +21,11 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * JwtAuthenticationFilter
  *
- * Responsibilities: 1. Intercept all requests except public endpoints 2.
- * Extract JWT from Authorization header 3. Validate signature and expiry 4.
- * Extract username and role 5. Set authentication in SecurityContext
+ * Responsibilities: 
+ * 	1. Intercept all requests except public endpoints 
+ *  2. Extract JWT from Authorization header 
+ *  3. Validate signature and expiry 
+ *  4. Extract username and role 5. Set authentication in SecurityContext
  *
  * Author: Vikas Yadav
  */
@@ -36,15 +38,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private JWTValidator jwt;
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 		String path = request.getServletPath();
 		logger.info("🔹 Incoming request path: {}", path);
 
 		// 1️⃣ Skip public endpoints
 		if (path.startsWith("/rent-hub/auth/password/") || path.startsWith("/rent-hub/auth/auth/")
-				|| path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")) {
+				|| path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")||path.startsWith("/actuator/")) {
 			logger.info("🔹 Public endpoint accessed, skipping JWT validation");
 			filterChain.doFilter(request, response);
 			return;

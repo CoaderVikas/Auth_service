@@ -26,7 +26,7 @@ import lombok.Setter;
  */
 
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "refresh_tokens",schema = "userService")
 @Getter
 @Setter
 @Builder

@@ -18,7 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "USER_OTP",
+@Table(name = "USER_OTP",schema = "userService",
        indexes = {
            @Index(name = "IDX_USER_ID", columnList = "USER_ID"),
            @Index(name = "IDX_EXPIRY_TIME", columnList = "expiryTime")

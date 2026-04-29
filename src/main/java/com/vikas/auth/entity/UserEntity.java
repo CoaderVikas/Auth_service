@@ -18,7 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "APP_USERS",
+@Table(name = "APP_USERS",schema = "userService",
        indexes = {
            @Index(name = "IDX_USERNAME", columnList = "username")
        })

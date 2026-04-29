@@ -26,20 +26,23 @@ ext {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'de.codecentric:spring-boot-admin-starter-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	implementation 'org.modelmapper:modelmapper:3.2.0'
+
+	implementation 'de.codecentric:spring-boot-admin-starter-client'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 	implementation 'org.springframework.kafka:spring-kafka'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'org.modelmapper:modelmapper:3.2.0'
 	
 	
 	compileOnly 'org.projectlombok:lombok'
@@ -48,7 +51,8 @@ dependencies {
 	
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	
-	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	//runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	//runtimeOnly 'org.postgresql:postgresql'
