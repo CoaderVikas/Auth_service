@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "coadervikas/auth-service"
         IMAGE_TAG = "latest"
+        KUBECONFIG = "/tmp/kubeconfig.yaml"
     }
 
     stages {
@@ -29,7 +30,9 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo "Building Docker image"
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh '''
+                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
             }
         }
 
@@ -54,10 +57,18 @@ pipeline {
         stage('Kubernetes Deploy') {
             steps {
                 echo "Deploying to Kubernetes"
-                sh '''
-                    kubectl apply -f k8s/dev/
-                    kubectl rollout restart deployment auth-service
-                '''
+
+                withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
+                    sh '''
+                        export KUBECONFIG=$KUBECONFIG_FILE
+
+                        kubectl version --client
+                        kubectl get nodes
+
+                        kubectl apply -f k8s/dev/
+                        kubectl rollout restart deployment/auth-service
+                    '''
+                }
             }
         }
     }
