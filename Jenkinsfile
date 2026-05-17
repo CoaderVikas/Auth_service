@@ -4,6 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = "coadervikas/auth-service"
         IMAGE_TAG = "latest"
+        JAVA_HOME = "/usr/lib/jvm/java-17-openjdk-amd64"
+        PATH = "$JAVA_HOME/bin:$PATH"
     }
 
     stages {
@@ -19,15 +21,19 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building Spring Boot app"
-                sh 'chmod +x gradlew'
-                sh './gradlew clean build -x test'
+                sh '''
+                    chmod +x gradlew
+                    ./gradlew clean build -x test
+                '''
             }
         }
 
         stage('Docker Build') {
             steps {
-                echo "Building Docker image"
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                steps {
+                    echo "Building Docker image"
+                    sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                }
             }
         }
 
@@ -41,8 +47,10 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
 
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$IMAGE_TAG
+                    '''
                 }
             }
         }
@@ -50,20 +58,21 @@ pipeline {
         stage('Kubernetes Deploy') {
             steps {
                 echo "Deploying to Kubernetes"
-
-                sh 'kubectl apply -f k8s/dev/'
-                sh 'kubectl rollout restart deployment auth-service'
+                sh '''
+                    kubectl apply -f k8s/dev/
+                    kubectl rollout restart deployment auth-service
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "SUCCESS: App deployed to Kubernetes 🚀"
+            echo "SUCCESS: App deployed to Kubernetes"
         }
 
         failure {
-            echo "FAILED: Check Jenkins logs ❌"
+            echo "FAILED: Check Jenkins logs"
         }
     }
 }
