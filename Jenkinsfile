@@ -4,8 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = "coadervikas/auth-service"
         IMAGE_TAG = "latest"
-        JAVA_HOME = "/usr/lib/jvm/java-17-openjdk-amd64"
-        PATH = "$JAVA_HOME/bin:$PATH"
     }
 
     stages {
@@ -30,10 +28,8 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                steps {
-                    echo "Building Docker image"
-                    sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
-                }
+                echo "Building Docker image"
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
@@ -70,7 +66,6 @@ pipeline {
         success {
             echo "SUCCESS: App deployed to Kubernetes"
         }
-
         failure {
             echo "FAILED: Check Jenkins logs"
         }
