@@ -64,17 +64,18 @@ pipeline {
 
                         export KUBECONFIG=$KUBECONFIG_FILE
 
-                        echo "Testing cluster connection..."
+                        echo "Checking cluster access..."
                         kubectl version --client
-                        kubectl cluster-info || true
                         kubectl get nodes
 
-                        echo "Applying Kubernetes manifests..."
-                        kubectl apply -f k8s/dev/ --validate=false
+                        echo "Deploying manifests..."
+                        kubectl apply -f k8s/dev/
 
                         echo "Restarting deployment..."
-                        kubectl rollout restart deployment/auth-service || true
-                        kubectl rollout status deployment/auth-service || true
+                        kubectl rollout restart deployment/auth-service
+
+                        echo "Waiting for rollout..."
+                        kubectl rollout status deployment/auth-service --timeout=120s
                     '''
                 }
             }
