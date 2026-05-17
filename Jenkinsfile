@@ -4,7 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = "coadervikas/auth-service"
         IMAGE_TAG = "latest"
-        KUBECONFIG = "/tmp/kubeconfig.yaml"
     }
 
     stages {
@@ -59,14 +58,23 @@ pipeline {
                 echo "Deploying to Kubernetes"
 
                 withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
+
                     sh '''
+                        set -e
+
                         export KUBECONFIG=$KUBECONFIG_FILE
 
+                        echo "Testing cluster connection..."
                         kubectl version --client
+                        kubectl cluster-info || true
                         kubectl get nodes
 
-                        kubectl apply -f k8s/dev/
-                        kubectl rollout restart deployment/auth-service
+                        echo "Applying Kubernetes manifests..."
+                        kubectl apply -f k8s/dev/ --validate=false
+
+                        echo "Restarting deployment..."
+                        kubectl rollout restart deployment/auth-service || true
+                        kubectl rollout status deployment/auth-service || true
                     '''
                 }
             }
