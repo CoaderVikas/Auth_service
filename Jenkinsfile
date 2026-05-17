@@ -18,11 +18,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building Spring Boot app"
-                sh '''
-                    chmod +x gradlew
-                    ./gradlew clean build -x test
-                '''
+                steps {
+                    echo "Building Spring Boot app"
+                    sh '''
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                    '''
+                }
             }
         }
 
@@ -30,6 +32,7 @@ pipeline {
             steps {
                 echo "Building Docker image"
                 sh '''
+                    set -e
                     docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
@@ -46,6 +49,7 @@ pipeline {
                 )]) {
 
                     sh '''
+                        set -e
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                         docker push $IMAGE_NAME:$IMAGE_TAG
                     '''
@@ -57,6 +61,12 @@ pipeline {
             steps {
                 echo "Deploying to Kubernetes"
 
+                script {
+                    if (!fileExists('/tmp/kubeconfig.yaml')) {
+                        error "Kubeconfig missing in Jenkins. Add credential with ID: kubeconfig-file"
+                    }
+                }
+
                 withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
 
                     sh '''
@@ -64,18 +74,18 @@ pipeline {
 
                         export KUBECONFIG=$KUBECONFIG_FILE
 
-                        echo "Checking cluster access..."
+                        echo "Testing cluster access..."
                         kubectl version --client
                         kubectl get nodes
 
-                        echo "Deploying manifests..."
+                        echo "Deploying Kubernetes manifests..."
                         kubectl apply -f k8s/dev/
 
                         echo "Restarting deployment..."
                         kubectl rollout restart deployment/auth-service
 
                         echo "Waiting for rollout..."
-                        kubectl rollout status deployment/auth-service --timeout=120s
+                        kubectl rollout status deployment/auth-service --timeout=180s
                     '''
                 }
             }
@@ -86,8 +96,9 @@ pipeline {
         success {
             echo "SUCCESS: App deployed to Kubernetes"
         }
+
         failure {
-            echo "FAILED: Check Jenkins logs"
+            echo "FAILED: Check Jenkins logs (Docker/K8s/Kubeconfig issue)"
         }
     }
 }
