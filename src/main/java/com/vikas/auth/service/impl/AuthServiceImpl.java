@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
 		} catch (Exception e) {
 		    log.error("Failed to publish user registration event | email={}", user.getEmail(), e);
 		}
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
+		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),user.getFullName());
 
 		return LoginResponse.builder().token(accessToken).username(user.getUsername())
 				.message("Account created successfully").role(user.getRole()).build();
@@ -115,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setFailedLoginAttempts(0);
 		userRepository.save(user);
 
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion());
+		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),user.getFullName());
 		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, refreshToken);
 
@@ -143,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
 		refreshTokenRepository.save(storedToken);
 
 		String newAccessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(),
-				user.getPasswordVersion());
+				user.getPasswordVersion(),user.getFullName());
 		String newRefreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, newRefreshToken);
 
