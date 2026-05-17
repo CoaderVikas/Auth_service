@@ -10,7 +10,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Checking out source code"
                 git branch: 'feature_dev',
                     url: 'https://github.com/CoaderVikas/Auth_service.git'
             }
@@ -18,7 +17,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building Spring Boot app"
                 sh '''
                     set -e
                     chmod +x gradlew
@@ -29,7 +27,6 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                echo "Building Docker image"
                 sh '''
                     set -e
                     docker build -t $IMAGE_NAME:$IMAGE_TAG .
@@ -39,14 +36,11 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                echo "Pushing Docker image"
-
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-
                     sh '''
                         set -e
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
@@ -58,29 +52,25 @@ pipeline {
 
         stage('Kubernetes Deploy') {
             steps {
-                echo "Deploying to Kubernetes"
+                withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
 
-                script {
-                    try {
-                        withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG_FILE')]) {
+                    sh '''
+                        set -e
 
-                            sh '''
-                                set -e
+                        export KUBECONFIG=$KUBECONFIG_FILE
 
-                                export KUBECONFIG=$KUBECONFIG_FILE
+                        echo "Checking cluster access..."
+                        kubectl get nodes
 
-                                kubectl version --client
-                                kubectl get nodes
+                        echo "Applying manifests..."
+                        kubectl apply -f k8s/dev/
 
-                                kubectl apply -f k8s/dev/
-                                kubectl rollout restart deployment/auth-service
-                                kubectl rollout status deployment/auth-service --timeout=180s
-                            '''
-                        }
-                    } catch (err) {
-                        echo "Kubernetes deploy failed but pipeline will NOT break fully"
-                        echo "Reason: ${err}"
-                    }
+                        echo "Restarting deployment..."
+                        kubectl rollout restart deployment/auth-service
+
+                        echo "Waiting for rollout..."
+                        kubectl rollout status deployment/auth-service --timeout=180s
+                    '''
                 }
             }
         }
@@ -88,11 +78,11 @@ pipeline {
 
     post {
         success {
-            echo "SUCCESS: App deployed successfully"
+            echo "SUCCESS: App deployed successfully to Kubernetes"
         }
 
         failure {
-            echo "FAILED: Check Jenkins logs"
+            echo "FAILED: Pipeline failed. Check logs (Build/Docker/K8s issue)"
         }
     }
 }
