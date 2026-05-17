@@ -1,44 +1,69 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "coadervikas/auth-service"
+        IMAGE_TAG = "latest"
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
-                echo "✅ Checking out source code from Git"
-                git branch: 'feature_dev', url: 'https://github.com/CoaderVikas/Auth_service.git'
+                echo "Checking out source code"
+                git branch: 'feature_dev',
+                url: 'https://github.com/CoaderVikas/Auth_service.git'
             }
         }
 
         stage('Build') {
             steps {
-                echo "📦 Building Spring Boot project with Gradle (tests skipped)"
-                bat 'gradlew.bat clean build -x test --stacktrace --info'
+                echo "Building Spring Boot app"
+                sh 'chmod +x gradlew'
+                sh './gradlew clean build -x test'
             }
         }
 
-        stage('Run') {
+        stage('Docker Build') {
             steps {
-                echo "🚀 Running Spring Boot application in background"
-                bat '''
-                REM Kill any running Java apps to avoid port conflict
-                taskkill /F /IM java.exe || exit 0
+                echo "Building Docker image"
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+            }
+        }
 
-                REM Start the jar file in background
-                for %%f in (build\\libs\\*.jar) do (
-                    start /B java -jar %%f
-                )
-                '''
+        stage('Docker Push') {
+            steps {
+                echo "Pushing Docker image"
+
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                }
+            }
+        }
+
+        stage('Kubernetes Deploy') {
+            steps {
+                echo "Deploying to Kubernetes"
+
+                sh 'kubectl apply -f k8s/dev/'
+                sh 'kubectl rollout restart deployment auth-service'
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build and deployment completed successfully!"
+            echo "SUCCESS: App deployed to Kubernetes 🚀"
         }
+
         failure {
-            echo "❌ Build failed. Check console logs for details."
+            echo "FAILED: Check Jenkins logs ❌"
         }
     }
 }
