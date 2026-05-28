@@ -62,7 +62,7 @@ public class ProfileServiceImpl implements ProfileService {
 	 * 
 	 * log.info(LOG_WARMUP_COMPLETE, users.size()); }
 	 */
-	@EventListener(ApplicationReadyEvent.class) // केवल इसी इवेंट का उपयोग करें
+	/*@EventListener(ApplicationReadyEvent.class)
 	public void preloadUserProfiles() {
 		new Thread(() -> {
 			try {
@@ -85,7 +85,7 @@ public class ProfileServiceImpl implements ProfileService {
 				log.error("Error occurred during background cache warmup: ", e);
 			}
 		}, "CacheWarmup-Thread").start();
-	}
+	}*/
 
 	/**
 	 * 2️⃣ Fetch user profile using Cache-Aside pattern
