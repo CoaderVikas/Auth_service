@@ -2,7 +2,7 @@
 # SERVER CONFIG
 # ================================
 server:
-  port: ${PORT:8080}
+  port: ${PORT}
 
 # ================================
 # SPRING CONFIG
