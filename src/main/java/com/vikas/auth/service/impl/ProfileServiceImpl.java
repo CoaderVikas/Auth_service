@@ -1,10 +1,18 @@
 package com.vikas.auth.service.impl;
 
-import static com.vikas.auth.util.ConstantsUtils.*;
+import static com.vikas.auth.util.ConstantsUtils.EMAIL_ALREADY_IN_USE;
+import static com.vikas.auth.util.ConstantsUtils.LOG_UPDATING_PROFILE;
+import static com.vikas.auth.util.ConstantsUtils.LOG_WARMUP_COMPLETE;
+import static com.vikas.auth.util.ConstantsUtils.LOG_WARMUP_START;
+import static com.vikas.auth.util.ConstantsUtils.USER_NOT_FOUND;
+import static com.vikas.auth.util.ConstantsUtils.USER_PROFILE_CACHE_PREFIX;
+import static com.vikas.auth.util.ConstantsUtils.USER_PROFILE_CACHE_TTL_MINUTES;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -36,6 +44,7 @@ public class ProfileServiceImpl implements ProfileService {
 	 */
 	@PostConstruct
 	@Async
+	@EventListener(ApplicationReadyEvent.class)
 	public void preloadUserProfiles() {
 		log.info(LOG_WARMUP_START);
 
