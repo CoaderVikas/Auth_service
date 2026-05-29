@@ -39,29 +39,25 @@ public class ProfileServiceImpl implements ProfileService {
 	private final UserRepository userRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
 
-	/**
-	 * 1️⃣ Preload all user profiles into Redis cache at startup
-	 */
-	/*
-	 * @PostConstruct
-	 * 
-	 * @Async
-	 * 
-	 * @EventListener(ApplicationReadyEvent.class) public void preloadUserProfiles()
-	 * { log.info(LOG_WARMUP_START);
-	 * 
-	 * // 1a. Fetch all users from DB List<UserEntity> users =
-	 * userRepository.findAll();
-	 * 
-	 * // 1b. Map each user to DTO and store in Redis for (UserEntity user : users)
-	 * { String cacheKey = USER_PROFILE_CACHE_PREFIX + user.getUsername();
-	 * UserProfileResponse response = mapToResponse(user);
-	 * redisTemplate.opsForValue().set(cacheKey, response,
-	 * USER_PROFILE_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
-	 * log.info("Preloaded profile into cache for user: {}", user.getUsername()); }
-	 * 
-	 * log.info(LOG_WARMUP_COMPLETE, users.size()); }
-	 */
+	@PostConstruct
+	@Async
+	public void preloadUserProfiles() {
+		log.info(LOG_WARMUP_START);
+
+		// 1a. Fetch all users from DB
+		List<UserEntity> users = userRepository.findAll();
+
+		// 1b. Map each user to DTO and store in Redis
+		for (UserEntity user : users) {
+			String cacheKey = USER_PROFILE_CACHE_PREFIX + user.getUsername();
+			UserProfileResponse response = mapToResponse(user);
+			redisTemplate.opsForValue().set(cacheKey, response, USER_PROFILE_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+			log.info("Preloaded profile into cache for user: {}", user.getUsername());
+		}
+
+		log.info(LOG_WARMUP_COMPLETE, users.size());
+	}
+
 	/*@EventListener(ApplicationReadyEvent.class)
 	public void preloadUserProfiles() {
 		new Thread(() -> {
