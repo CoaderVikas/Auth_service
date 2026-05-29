@@ -54,7 +54,14 @@ spring:
       port: 6379
 
   kafka:   
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${kafka_bootstrap_servers}
+    username: ${kafka_username}
+    password: ${KAFKA_PASSWORD}
+    properties:
+      security.protocol: SASL_SSL
+      sasl:
+        mechanism: SCRAM-SHA-256
+        jaas.config: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${kafka_username}" password="${KAFKA_PASSWORD}";'
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
