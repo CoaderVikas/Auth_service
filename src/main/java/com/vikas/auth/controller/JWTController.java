@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.vikas.auth.dto.ChangePasswordRequest;
 import com.vikas.auth.dto.ChangePasswordResponse;
+import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.RefreshRequest;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.service.PasswordResetService;
@@ -43,7 +44,7 @@ public class JWTController {
 	private final PasswordResetService passwordResetService;
 
 	@PostMapping("/refresh")
-	public ResponseEntity<?> refreshToken(@RequestBody RefreshRequest request) {
+	public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshRequest request) {
 		return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
 	}
 
