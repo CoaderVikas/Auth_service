@@ -46,7 +46,7 @@ kind: Deployment
 metadata:
   name: auth-service
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: auth-service
@@ -57,7 +57,8 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: auth-service:1.0
+          image: auth-service
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9091
           env:

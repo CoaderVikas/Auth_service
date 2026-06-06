@@ -58,31 +58,6 @@ public class ProfileServiceImpl implements ProfileService {
 		log.info(LOG_WARMUP_COMPLETE, users.size());
 	}
 
-	/*@EventListener(ApplicationReadyEvent.class)
-	public void preloadUserProfiles() {
-		new Thread(() -> {
-			try {
-				log.info(LOG_WARMUP_START + " [In Background Thread: " + Thread.currentThread().getName() + "]");
-
-				// 1a. Fetch all users from DB
-				List<UserEntity> users = userRepository.findAll();
-
-				// 1b. Map each user to DTO and store in Redis
-				for (UserEntity user : users) {
-					String cacheKey = USER_PROFILE_CACHE_PREFIX + user.getUsername();
-					UserProfileResponse response = mapToResponse(user);
-					redisTemplate.opsForValue().set(cacheKey, response, USER_PROFILE_CACHE_TTL_MINUTES,
-							TimeUnit.MINUTES);
-					log.info("Preloaded profile into cache for user: {}", user.getUsername());
-				}
-
-				log.info(LOG_WARMUP_COMPLETE, users.size());
-			} catch (Exception e) {
-				log.error("Error occurred during background cache warmup: ", e);
-			}
-		}, "CacheWarmup-Thread").start();
-	}*/
-
 	/**
 	 * 2️⃣ Fetch user profile using Cache-Aside pattern
 	 */

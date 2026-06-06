@@ -107,6 +107,5 @@ eureka:
 
     service-url:
       defaultZone: https://eureca-server.onrender.com/eureka
-
   instance:
     prefer-ip-address: true

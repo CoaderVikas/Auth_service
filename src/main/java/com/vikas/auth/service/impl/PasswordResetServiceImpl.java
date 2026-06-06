@@ -25,6 +25,7 @@ import com.vikas.auth.util.ConstantsUtils;
 import com.vikas.feign.MailerFeignClient;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class      : PasswordResetServiceImpl
@@ -36,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordResetServiceImpl implements PasswordResetService {
 
 	private final UserRepository userRepository;
@@ -79,11 +81,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 		userOtpRepository.save(otpEntity);
 
 		//6. TODO: Send OTP via Email/SMS
-		// Prepare Mail Request
-		
 		mailRequest = prepareMail(user,newotp);
 		
-		System.err.println("OTP for " + username + ": " + newotp);
+		log.info("OTP for {}: {}", username ,newotp);
 		
 		// Call Mailer Service
 		MailResponse response = mailerFeignClient.sendMail(mailRequest);
@@ -96,64 +96,65 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 	@Override
 	@Transactional
 	public PasswordResetResponse resetPassword(PasswordResetRequest request) {
-	    // 1️ Fetch user by username
-	    UserEntity user = userRepository.findByUsername(request.getUsername())
-	            .orElseThrow(() -> new RuntimeException("User not found"));
-	    
-	    checkAndUnlock(user);
+		// 1️ Fetch user by username
+		UserEntity user = userRepository.findByUsername(request.getUsername())
+				.orElseThrow(() -> new RuntimeException("User not found"));
 
-	    // 2️ Check account status
-	    if (!user.getEnabled())
-	        return PasswordResetResponse.builder().success(false).message("Account disabled").build();
-	    if (!user.getAccountNonLocked())
-	        return PasswordResetResponse.builder().success(false).message("Account locked").build();
+		checkAndUnlock(user);
 
-	    // 3️ Fetch latest active OTP for password reset
-	    Optional<UserOtpEntity> optionalOtp = userOtpRepository
-	            .findTopByUserAndPurposeAndUsedFalseOrderByCreatedAtDesc(user, "RESET_PASSWORD");
+		// 2️ Check account status
+		if (!user.getEnabled())
+			return PasswordResetResponse.builder().success(false).message("Account disabled").build();
+		if (!user.getAccountNonLocked())
+			return PasswordResetResponse.builder().success(false).message("Account locked").build();
 
-	    if (optionalOtp.isEmpty())
-	        return PasswordResetResponse.builder().success(false).message("No valid OTP found").build();
+		// 3️ Fetch latest active OTP for password reset
+		Optional<UserOtpEntity> optionalOtp = userOtpRepository
+				.findTopByUserAndPurposeAndUsedFalseOrderByCreatedAtDesc(user, "RESET_PASSWORD");
 
-	    UserOtpEntity otp = optionalOtp.get();
+		if (optionalOtp.isEmpty())
+			return PasswordResetResponse.builder().success(false).message("No valid OTP found").build();
 
-	    // 4️ Check if OTP is expired
-	    if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
-	        otp.setUsed(true);                   // mark OTP used
-	        userOtpRepository.save(otp);         
-	        incrementFailedLogin(user);          // increase failed login attempts
-	        return PasswordResetResponse.builder().success(false).message("OTP expired").build();
-	    }
+		UserOtpEntity otp = optionalOtp.get();
 
-	    // 5️ Check max OTP attempts
-	    if (otp.getAttemptCount() >= ConstantsUtils.MAX_OTP_ATTEMPTS) {
-	        otp.setUsed(true);                   // mark OTP used
-	        userOtpRepository.save(otp);
-	        incrementFailedLogin(user);          // increment failed login counter
-	        return PasswordResetResponse.builder().success(false).message("Maximum OTP attempts exceeded").build();
-	    }
+		// 4️ Check if OTP is expired
+		if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
+			otp.setUsed(true); // mark OTP used
+			userOtpRepository.save(otp);
+			incrementFailedLogin(user); // increase failed login attempts
+			return PasswordResetResponse.builder().success(false).message("OTP expired").build();
+		}
 
-	    // 6️⃣ Verify OTP match
-	    if (!passwordEncoder.matches(request.getOtp(), otp.getOtp())) {
-	        otp.setAttemptCount(otp.getAttemptCount() + 1); // increment OTP attempt
-	        userOtpRepository.save(otp);
-	        incrementFailedLogin(user);                    // increment failed login counter
-	        return PasswordResetResponse.builder().success(false).message("Invalid OTP").build();
-	    }
+		// 5️ Check max OTP attempts
+		if (otp.getAttemptCount() >= ConstantsUtils.MAX_OTP_ATTEMPTS) {
+			otp.setUsed(true); // mark OTP used
+			userOtpRepository.save(otp);
+			incrementFailedLogin(user); // increment failed login counter
+			return PasswordResetResponse.builder().success(false).message("Maximum OTP attempts exceeded").build();
+		}
 
-	    // 7️ OTP valid → reset password
-	    user.setPassword(passwordEncoder.encode(request.getNewPassword())); // hash and save
-	    user.setPasswordVersion(user.getPasswordVersion() + 1);             // increment version
-	    user.setPasswordLastUpdatedAt(LocalDateTime.now());                 // update timestamp
-	    user.setFailedLoginAttempts(0);                                     // reset failed login attempts
-	    userRepository.save(user);
+		// 6️⃣ Verify OTP match
+		if (!passwordEncoder.matches(request.getOtp(), otp.getOtp())) {
+			otp.setAttemptCount(otp.getAttemptCount() + 1); // increment OTP attempt
+			userOtpRepository.save(otp);
+			incrementFailedLogin(user); // increment failed login counter
+			return PasswordResetResponse.builder().success(false).message("Invalid OTP").build();
+		}
 
-	    // 8️ Mark OTP as used after successful reset
-	    otp.setUsed(true);
-	    userOtpRepository.save(otp);
+		// 7️ OTP valid → reset password
+		user.setPassword(passwordEncoder.encode(request.getNewPassword())); // hash and save
+		user.setPasswordVersion(user.getPasswordVersion() + 1); // increment version
+		user.setPasswordLastUpdatedAt(LocalDateTime.now()); // update timestamp
+		user.setFailedLoginAttempts(0); // reset failed login attempts
+		userRepository.save(user);
 
-	    // 9️ Return success response
-	    return PasswordResetResponse.builder().success(true).message("Password reset successfully please login again").build();
+		// 8️ Mark OTP as used after successful reset
+		otp.setUsed(true);
+		userOtpRepository.save(otp);
+
+		// 9️ Return success response
+		return PasswordResetResponse.builder().success(true).message("Password reset successfully please login again")
+				.build();
 	}
 
 	@Override
@@ -175,8 +176,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 			return ChangePasswordResponse.builder().success(false).message("Account locked").build();
 		}
 
-		// 4️ Verify current password
-		// If incorrect, increment failed login attempts
+		// 4️ Verify current password If incorrect, increment failed login attempts
 		if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
 			incrementFailedLogin(user);
 			return ChangePasswordResponse.builder().success(false).message("Incorrect current password ").build();

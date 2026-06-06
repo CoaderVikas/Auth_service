@@ -77,10 +77,9 @@ public class AuthServiceImpl implements AuthService {
 		log.info("User registered successfully | username={}, email={}", user.getUsername(), user.getEmail());
 		try {
 
-		    UserRegisteredEvent event =
-		            new UserRegisteredEvent(user.getEmail(), user.getFullName());
+			UserRegisteredEvent event = new UserRegisteredEvent(user.getEmail(), user.getFullName());
 
-		    userEventProducer.sendUserRegisteredEvent(event);
+			userEventProducer.sendUserRegisteredEvent(event);
 
 		} catch (Exception e) {
 		    log.error("Failed to publish user registration event | email={}", user.getEmail(), e);

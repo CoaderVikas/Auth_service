@@ -35,9 +35,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 	private final UserRepository userRepository;
 
 	/**
-	 * =========================================================
-	 * 1️⃣ Fetch All Users (Admin Dashboard) with Pagination
-	 * =========================================================
+	 * 
+	 * 1️ Fetch All Users (Admin Dashboard) with Pagination
 	 */
 	@Override
 	public PaginatedUserResponse getAllUsers(int page, int size) {
@@ -57,9 +56,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 				.build();
 	}
 	/**
-	 * =========================================================
-	 * 2️⃣ Lock User
-	 * =========================================================
+	 * 2️ Lock User
 	 */
 	@Override
 	public void lockUser(Long userId) {
