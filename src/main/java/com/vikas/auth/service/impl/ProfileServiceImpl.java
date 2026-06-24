@@ -8,15 +8,19 @@ import static com.vikas.auth.util.ConstantsUtils.USER_NOT_FOUND;
 import static com.vikas.auth.util.ConstantsUtils.USER_PROFILE_CACHE_PREFIX;
 import static com.vikas.auth.util.ConstantsUtils.USER_PROFILE_CACHE_TTL_MINUTES;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.vikas.auth.dto.UpdateProfileRequest;
 import com.vikas.auth.dto.UserProfileResponse;
@@ -24,6 +28,7 @@ import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.ProfileService;
+import com.vikas.auth.util.UserUtils;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -93,7 +98,7 @@ public class ProfileServiceImpl implements ProfileService {
 	 * 3️⃣ Update user profile and refresh Redis cache
 	 */
 	@Override
-	public UserProfileResponse updateProfile(String username, UpdateProfileRequest request) {
+	public UserProfileResponse updateProfile(String username, UpdateProfileRequest request,MultipartFile file) {
 
 		String cacheKey = USER_PROFILE_CACHE_PREFIX + username;
 		log.info(LOG_UPDATING_PROFILE, username);
@@ -103,19 +108,23 @@ public class ProfileServiceImpl implements ProfileService {
 				.orElseThrow(() -> new AuthServiceException(String.format(USER_NOT_FOUND, username)));
 
 		// 3b. Update full name if provided
-		if (StringUtils.hasText(request.getFullName())) {
+		if (request != null && StringUtils.hasText(request.getFullName())) {
 			user.setFullName(request.getFullName());
 			log.info("Full name updated for user: {}", username);
 		}
 
 		// 3c. Update email if provided & unique
-		if (StringUtils.hasText(request.getEmail())) {
+		if (request != null && StringUtils.hasText(request.getEmail())) {
 			if (!request.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
 				log.warn("Attempted to update email to '{}', but it's already in use", request.getEmail());
 				throw new AuthServiceException(EMAIL_ALREADY_IN_USE);
 			}
 			user.setEmail(request.getEmail());
-			log.info("Email updated for user: {}", username);
+			log.info("Profile updated for user: {}", username);
+		}
+		if (file != null && !file.isEmpty()) {
+			String savedPhotoPath = UserUtils.storeTenantImage(file, username);
+			user.setPhotoUrl(savedPhotoPath);
 		}
 
 		// 3d. Map updated entity to DTO
@@ -135,7 +144,34 @@ public class ProfileServiceImpl implements ProfileService {
 		log.info("Mapping UserEntity to UserProfileResponse for username: {}", user.getUsername());
 		return UserProfileResponse.builder().fullName(user.getFullName()).username(user.getUsername())
 				.email(user.getEmail()).role(user.getRole()).enabled(user.getEnabled())
+				.photoUrl(user.getPhotoUrl())
 				.accountNonLocked(user.getAccountNonLocked()).failedLoginAttempts(user.getFailedLoginAttempts())
 				.passwordLastUpdatedAt(user.getPasswordLastUpdatedAt()).build();
 	}
+
+	
+	@Override
+	public Resource getUserImageResource(String userId) {
+		UserEntity byUsername = userRepository.findByUsername(userId)
+				.orElseThrow(() -> new AuthServiceException("User not found with ID: " + userId));
+
+		String photoUrl = byUsername.getPhotoUrl();
+		if (photoUrl == null || photoUrl.isEmpty()) {
+			throw new AuthServiceException("No profile image found for this tenant.");
+		}
+
+		try {
+			Path filePath = Paths.get(photoUrl);
+			Resource resource = new UrlResource(filePath.toUri());
+
+			if (resource.exists() && resource.isReadable()) {
+				return resource;
+			} else {
+				throw new AuthServiceException("Image file does not exist or is not readable on server.");
+			}
+		} catch (MalformedURLException e) {
+			throw new AuthServiceException("Error while loading image: " + e.getMessage());
+		}
+	}
+	
 }

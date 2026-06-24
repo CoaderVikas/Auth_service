@@ -1,9 +1,23 @@
 package com.vikas.auth.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.vikas.auth.dto.UpdateProfileRequest;
 import com.vikas.auth.dto.UserProfileResponse;
@@ -13,7 +27,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProfileController {
 
 	private final ProfileService profileService;
+	String username=null;
 
 	/**
 	 * Get logged-in user profile
@@ -60,16 +74,57 @@ public class ProfileController {
 			@ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT"),
 			@ApiResponse(responseCode = "404", description = "User not found"),
 			@ApiResponse(responseCode = "500", description = "Internal server error") })
-	@PutMapping("/me")
+	@PutMapping(value = "/me")
 	public ResponseEntity<UserProfileResponse> updateProfile(Authentication authentication,
-			@Valid @RequestBody UpdateProfileRequest request) {
+			@Valid @RequestBody UpdateProfileRequest request,@RequestParam(value = "file",required = false) MultipartFile file) {
 
 		String username = authentication.getName();
 		log.info("Updating profile for user: {}", username);
 
-		UserProfileResponse response = profileService.updateProfile(username, request);
+		UserProfileResponse response = profileService.updateProfile(username, request,null);
 
 		log.debug("Profile updated successfully for user: {}", username);
 		return ResponseEntity.ok(response);
+	}
+	
+	@Operation(summary = "Update Profile Photo", description = "Uploads and updates the profile photo of the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile photo updated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid file or no file provided"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	@PutMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<UserProfileResponse> updateUserPhoto(Authentication authentication,
+			@RequestParam(value = "file") MultipartFile file) {
+
+		username = authentication.getName();
+		log.info("Updating profile photo for user: {}", username);
+
+		UserProfileResponse response = profileService.updateProfile(username, null, file);
+
+		log.debug("Profile photo updated successfully for user: {}", username);
+
+		return ResponseEntity.ok(response);
+	}
+	
+	
+	@Operation(summary = "Update Profile Photo", description = "Uploads and updates the profile photo of the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile photo updated successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid file or no file provided"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT"),
+		@ApiResponse(responseCode = "404", description = "User not found"),
+		@ApiResponse(responseCode = "500", description = "Internal server error") })
+	@GetMapping("/getImage")
+	public ResponseEntity<Resource> getTenantImage(Authentication authentication) {
+		try {
+			Resource resource = profileService.getUserImageResource(authentication.getName());
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(Path.of(resource.getURI())))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+					.body(resource);
+
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
 }

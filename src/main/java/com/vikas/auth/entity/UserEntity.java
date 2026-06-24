@@ -79,4 +79,7 @@ public class UserEntity extends AuditableEntity {
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
 }

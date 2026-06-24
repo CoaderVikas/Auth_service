@@ -109,3 +109,7 @@ eureka:
       defaultZone: https://eureca-server.onrender.com/eureka
   instance:
     prefer-ip-address: true
+
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}

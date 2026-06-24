@@ -1,5 +1,8 @@
 package com.vikas.auth.service;
 
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.vikas.auth.dto.UpdateProfileRequest;
 import com.vikas.auth.dto.UserProfileResponse;
 
@@ -13,7 +16,26 @@ import com.vikas.auth.dto.UserProfileResponse;
 
 public interface ProfileService {
 
+	/**
+	 * 
+	 * @param username
+	 * @return
+	 */
 	UserProfileResponse getMyProfile(String username);
 
-	UserProfileResponse updateProfile(String username, UpdateProfileRequest request);
+	/**
+	 * 
+	 * @param username
+	 * @param request
+	 * @param file
+	 * @return
+	 */
+	UserProfileResponse updateProfile(String username, UpdateProfileRequest request,MultipartFile file);
+	
+	/**
+	 * 
+	 * @param customId
+	 * @return
+	 */
+	Resource getUserImageResource(String userId);
 }

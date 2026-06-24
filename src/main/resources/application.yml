@@ -114,3 +114,7 @@ jwt:
 #    fetch-registry: true
 #    service-url:
 #      defaultZone: http://eureka-server:8761/eureka/
+
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}

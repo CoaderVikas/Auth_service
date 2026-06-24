@@ -25,7 +25,9 @@ public class UserProfileResponse {
     private String email;
     private String role;
     private Boolean enabled;
+    private String photoUrl;
     private Boolean accountNonLocked;
     private Integer failedLoginAttempts;
     private LocalDateTime passwordLastUpdatedAt;
+    private String message;
 }

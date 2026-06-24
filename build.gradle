@@ -39,6 +39,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	implementation 'com.google.api-client:google-api-client:2.2.0'
 
 	implementation 'de.codecentric:spring-boot-admin-starter-client'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
