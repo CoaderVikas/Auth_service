@@ -1,5 +1,6 @@
 package com.vikas.auth.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.vikas.auth.jwt.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,9 +50,9 @@ public class SecurityConfig {
 								"/swagger-ui.html",
 								"/instances/**",
 								"/actuator/**"
-								).permitAll())
-						//.anyRequest()
-						//.authenticated())
+								).permitAll()
+						.anyRequest()
+						.authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		//http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -74,6 +76,13 @@ public class SecurityConfig {
 	    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
 	    provider.setPasswordEncoder(passwordEncoder);
 	    return provider;
+	}
+	
+	@Bean
+	FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+	    FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+	    registration.setEnabled(false);   // auto-registration band; sirf SecurityConfig se chalega
+	    return registration;
 	}
 
 }

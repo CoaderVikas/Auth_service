@@ -33,6 +33,17 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+	
+	private static final List<String> PUBLIC_PATHS = List.of(
+		    "/rent-hub/auth/auth/", 
+		    "/rent-hub/auth/password/",
+		    "/rent-hub/auth/jwt/refresh",
+		    "/rent-hub/auth/jwt/logout",
+		    "/swagger-ui/",
+		    "/swagger-ui.html",
+		    "/v3/api-docs",
+		    "/actuator/"
+		);
 
 	@Autowired
 	private JWTValidator jwt;
@@ -44,12 +55,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		logger.info("🔹 Incoming request path: {}", path);
 
 		// 1️⃣ Skip public endpoints
-		if (path.startsWith("/rent-hub/auth/password/") || path.startsWith("/rent-hub/auth/auth/")||path.startsWith("/rent-hub/auth/auth/google")
-				|| path.startsWith("/swagger-ui/") || path.startsWith("/v3/api-docs")||path.startsWith("/actuator/")) {
-			logger.info("🔹 Public endpoint accessed, skipping JWT validation");
-			filterChain.doFilter(request, response);
-			return;
-		}
+		 // Public endpoints -> JWT validation skip
+	    if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
+	        filterChain.doFilter(request, response);
+	        return;
+	    }
 
 		// 2️⃣ Extract Authorization header
 		String authHeader = request.getHeader("Authorization");
