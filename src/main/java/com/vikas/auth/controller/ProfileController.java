@@ -108,14 +108,14 @@ public class ProfileController {
 	}
 	
 	
-	@Operation(summary = "Update Profile Photo", description = "Uploads and updates the profile photo of the authenticated user")
+	@Operation(summary = "Update Logged in user Photo", description = "Uploads and updates the profile photo of the authenticated user")
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile photo updated successfully"),
 		@ApiResponse(responseCode = "400", description = "Invalid file or no file provided"),
 		@ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT"),
 		@ApiResponse(responseCode = "404", description = "User not found"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 	@GetMapping("/getImage")
-	public ResponseEntity<Resource> getTenantImage(Authentication authentication) {
+	public ResponseEntity<Resource> getUserImage(Authentication authentication) {
 		try {
 			Resource resource = profileService.getUserImageResource(authentication.getName());
 			return ResponseEntity.ok()
@@ -123,6 +123,26 @@ public class ProfileController {
 					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
 					.body(resource);
 
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@Operation(summary = "Get users pic by username", description = "Uploads and updates the profile photo of the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile photo updated successfully"),
+		@ApiResponse(responseCode = "400", description = "Invalid file or no file provided"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT"),
+		@ApiResponse(responseCode = "404", description = "User not found"),
+		@ApiResponse(responseCode = "500", description = "Internal server error") })
+	@GetMapping("/getImage/{username}")
+	public ResponseEntity<Resource> getUserImageByUserId(@PathVariable("username") String username) {
+		try {
+			Resource resource = profileService.getUserImageResource(username);
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(Path.of(resource.getURI())))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+					.body(resource);
+			
 		} catch (Exception e) {
 			return ResponseEntity.notFound().build();
 		}
