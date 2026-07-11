@@ -22,4 +22,6 @@ public class RegisterRequest {
 	@NotBlank
 	private String email;
 	private String role; // optional, default ROLE_USER
+	private String phone;            // 10-digit (frontend +91 strip karke bhejega)
+	private String firebaseIdToken;
 }

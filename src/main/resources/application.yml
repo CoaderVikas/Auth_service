@@ -118,3 +118,8 @@ jwt:
 google:
   client:
     id: ${GOOGLE_CLIENT_ID}
+
+firebase:
+  project-id: ${FB_PROJECT_ID}
+  client-email: ${FB_CLIENT_EMAIL}
+  private-key: ${FB_PRIVATE_KEY}

@@ -15,6 +15,7 @@ import com.vikas.auth.jwt.JwtService;
 import com.vikas.auth.repository.RefreshTokenRepository;
 import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.AuthService;
+import com.vikas.auth.service.FirebasePhoneService;
 import com.vikas.auth.util.ConstantsUtils;
 import com.vikas.event.UserRegisteredEvent;
 import com.vikas.kafka.producer.UserEventProducer;
@@ -45,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
 	private final JwtService jwtProvider;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final UserEventProducer userEventProducer;
+	private final FirebasePhoneService firebasePhoneService;
 
 	@Override
 	public LoginResponse register(RegisterRequest request) {
@@ -59,6 +61,15 @@ public class AuthServiceImpl implements AuthService {
 			log.warn("Registration failed: email exists | email={}", request.getEmail());
 			throw new AuthServiceException("Email already registered");
 		}
+		
+		
+		String verifiedPhone = null;
+		if (request.getFirebaseIdToken() != null && !request.getFirebaseIdToken().isBlank()) {
+		    verifiedPhone = firebasePhoneService.verifyAndGetPhone(request.getFirebaseIdToken());
+		    if (userRepository.existsByPhone(verifiedPhone)) {
+		        throw new AuthServiceException("Phone already registered");
+		    }
+		}
 
 		UserEntity user = UserEntity.builder()
 				.username(request.getUsername())
@@ -66,6 +77,7 @@ public class AuthServiceImpl implements AuthService {
 				.role(request.getRole() != null ? request.getRole() : "USER")
 				.enabled(true).accountNonLocked(true)
 				.failedLoginAttempts(0)
+				.phone(request.getPhone())
 				.passwordVersion(1)
 				.passwordLastUpdatedAt(LocalDateTime.now())
 				.email(request.getEmail())

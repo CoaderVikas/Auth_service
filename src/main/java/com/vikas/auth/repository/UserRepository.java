@@ -49,5 +49,17 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
      * Admin Dashboard → Fetch all users with pagination
      */
     Page<UserEntity> findAll(Pageable pageable);
+    /**
+     * 
+     * @param phone
+     * @return
+     */
+    Optional<UserEntity> findByPhone(String phone);
+    /**
+     * 
+     * @param phone
+     * @return
+     */
+    boolean existsByPhone(String phone);
 
 }

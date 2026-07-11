@@ -39,7 +39,12 @@ public class UserEntity extends AuditableEntity {
 	@Column(nullable = false, length = 50)
 	private String role; // ROLE_USER / ROLE_ADMIN
 
-	// ================= PASSWORD CONTROL =================
+	@Column(unique = true, length = 15)
+	private String phone; 
+
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean phoneVerified = false;
 
 	@Column(nullable = false)
 	@Builder.Default
