@@ -75,7 +75,7 @@ spring:
 # ================================
 logging:
   pattern:
-    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level) %clr([%thread]){magenta} %clr(%logger{36}){cyan} : %msg%n%wEx{1}"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level) [%X{requestId}] [trace_id=%X{trace_id}] [%X{clientIp}] %clr([%thread]){magenta} %clr(%logger{36}){cyan} : %msg%n%wEx{5}"
   level:
     root: INFO
     org.hibernate.orm.connections.pooling: ERROR
