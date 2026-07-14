@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.vikas.auth.entity.UserEntity;
+import java.util.List;
+
 
 /**
  * Class      : UserRepository
@@ -61,5 +63,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
      * @return
      */
     boolean existsByPhone(String phone);
+    
+    /**
+     * 
+     * @param role
+     * @return
+     */
+    List<UserEntity> findByRole(String role);
 
 }

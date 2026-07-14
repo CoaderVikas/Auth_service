@@ -1,8 +1,16 @@
 package com.vikas.auth.service.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,11 +23,14 @@ import com.vikas.auth.dto.UserVerificationStatusResponse;
 import com.vikas.auth.entity.UserEntity;
 import com.vikas.auth.entity.UserVerificationEntity;
 import com.vikas.auth.exception.AuthServiceException;
+import com.vikas.auth.feign.dto.VerificationNotificationRequest;
 import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.repository.UserVerificationRepository;
 import com.vikas.auth.service.UserVerificationService;
+import com.vikas.auth.util.ConstantsUtils;
 import com.vikas.auth.util.UserUtils;
 import com.vikas.enums.OwnerVerificationStatus;
+import com.vikas.feign.NotificationServiceFeignClient;
 import com.vikas.mapper.UserVerificationMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +51,8 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 	private final UserVerificationRepository verificationRepository;
 	private final UserRepository userRepository;
 	private final UserVerificationMapper verificationMapper;
+	private final NotificationServiceFeignClient notificationClient;
+
 
 	// ===================== OWNER: SUBMIT =====================
 	@Override
@@ -77,6 +90,9 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 		// Sync user-level status -> PENDING
 		user.setOwnerVerificationStatus(OwnerVerificationStatus.PENDING);
 		userRepository.save(user);
+		
+		// Notify all admins (best-effort; failure never breaks submission)
+		notifyAdminsOfSubmission(user);
 
 		log.info("Owner verification submitted by userId={}, verificationId={}", user.getId(), verification.getId());
 
@@ -149,6 +165,9 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 
 		verificationRepository.save(verification);
 		userRepository.save(owner);
+		
+		// Notify owner of decision (best-effort)
+		notifyOwnerOfDecision(owner, verification);
 
 		log.info("Verification {} reviewed by adminId={}, decision={}", verificationId, admin.getId(),
 				verification.getStatus());
@@ -161,5 +180,80 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 		String username = authentication.getName();
 		return userRepository.findByUsername(username)
 				.orElseThrow(() -> new IllegalStateException("User not found: " + username));
+	}
+	
+	
+	// ===================== NOTIFICATION =====================
+	private void notifyAdminsOfSubmission(UserEntity owner) {
+	    try {
+	        List<UserEntity> admins = userRepository.findByRole("ROLE_ADMIN");
+	        if (admins.isEmpty()) {
+	            log.warn("No ROLE_ADMIN users found to notify for owner verification");
+	            return;
+	        }
+	        String msg = "New owner verification request from " + owner.getFullName();
+	        for (UserEntity admin : admins) {
+	            VerificationNotificationRequest req = VerificationNotificationRequest.builder()
+	                    .recipientId(admin.getUsername())   // bell isi username pe query karti hai
+	                    .event("SUBMITTED")
+	                    .ownerId(owner.getUsername())
+	                    .message(msg)
+	                    .build();
+	            safeSendNotification(req, admin.getUsername());
+	        }
+	    } catch (Exception ex) {
+	        log.error("Failed to notify admins of owner verification submission | error={}", ex.getMessage());
+	    }
+	}
+
+	private void notifyOwnerOfDecision(UserEntity owner, UserVerificationEntity verification) {
+		try {
+			boolean verified = verification.getStatus() == OwnerVerificationStatus.VERIFIED;
+			VerificationNotificationRequest req = VerificationNotificationRequest.builder()
+					.recipientId(owner.getUsername()).event(verified ? "VERIFIED" : "REJECTED")
+					.ownerId(owner.getUsername())
+					.message(verified ? "Your owner verification was approved. You are now a Verified Owner."
+							: "Your owner verification was rejected.")
+					.reason(verified ? null : verification.getRejectionReason()).build();
+			safeSendNotification(req, owner.getUsername());
+		} catch (Exception ex) {
+			log.error("Failed to notify owner of verification decision | error={}", ex.getMessage());
+		}
+	}
+
+	private void safeSendNotification(VerificationNotificationRequest req, String recipient) {
+		try {
+			notificationClient.createVerificationNotification(req);
+			log.info("Verification notification sent | recipient={} | event={}", recipient, req.getEvent());
+		} catch (Exception ex) {
+			log.error("Notification call failed | recipient={} | error={}", recipient, ex.getMessage());
+		}
+	}
+
+	// UserVerificationServiceImpl
+	@Override
+	public ResponseEntity<Resource> loadDocument(Long verificationId, String type) {
+		UserVerificationEntity v = verificationRepository.findById(verificationId)
+				.orElseThrow(() -> new AuthServiceException("Verification not found: " + verificationId));
+
+		String path = ConstantsUtils.ID_PROOF.equalsIgnoreCase(type) ? v.getIdDocUrl() : v.getOwnershipProofUrl();
+		if (path == null || path.isBlank()) {
+			throw new AuthServiceException("Document not available for type: " + type);
+		}
+		try {
+			Path filePath = Paths.get(path);
+			Resource resource = new UrlResource(filePath.toUri());
+			if (!resource.exists() || !resource.isReadable()) {
+				throw new AuthServiceException("Document file missing on server: " + path);
+			}
+			// content-type guess (jpeg/png/webp/pdf)
+			String contentType = Files.probeContentType(filePath);
+			if (contentType == null)
+				contentType = "application/octet-stream";
+
+			return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
+		} catch (IOException e) {
+			throw new AuthServiceException("Failed to read document: " + e.getMessage());
+		}
 	}
 }

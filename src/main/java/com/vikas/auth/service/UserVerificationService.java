@@ -2,6 +2,8 @@ package com.vikas.auth.service;
 
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,4 +72,11 @@ public interface UserVerificationService {
     UserVerificationResponse reviewVerification(Long verificationId,
                                                 UserVerificationReviewRequest review,
                                                 Authentication authentication);
+
+	/**
+	 * @param verificationId
+	 * @param type
+	 * @return
+	 */
+	ResponseEntity<Resource> loadDocument(Long verificationId, String type);
 }
