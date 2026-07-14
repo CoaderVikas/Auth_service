@@ -22,7 +22,7 @@ public class UserVerificationMapper {
 		if (entity == null) {
 			return null;
 		}
-		return new UserVerificationResponse(entity.getId(), entity.getUser() != null ? entity.getUser().getId() : null,
+		return new UserVerificationResponse(entity.getId(), entity.getUser() != null ? entity.getUser().getId() : null,entity.getUser().getRole(),
 				entity.getUser() != null ? entity.getUser().getFullName() : null, entity.getIdDocType(),
 				entity.getIdDocNumber(), entity.getIdDocUrl(), entity.getOwnershipProofType(),
 				entity.getOwnershipProofUrl(), entity.getStatus(), entity.getSubmittedAt(),

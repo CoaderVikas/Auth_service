@@ -24,6 +24,7 @@ public class VerificationNotificationRequest implements Serializable {
 	private String recipientId;
 	private String event;
 	private String propertyId;
+	private String role;
 	//private String propertyName;
 	private String ownerId;
 	private String message;

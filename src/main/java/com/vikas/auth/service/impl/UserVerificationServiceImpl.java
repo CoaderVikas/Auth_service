@@ -76,9 +76,10 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 
 		// Store files (reuse existing storage util)
 		String idDocUrl = UserUtils.storeVerificationDocument(idProofFile, String.valueOf(user.getId()), "id_proof");
-		String ownershipProofUrl = UserUtils.storeVerificationDocument(ownershipProofFile, String.valueOf(user.getId()),
-				"ownership_proof");
-
+		String ownershipProofUrl = null;
+		if (ownershipProofFile != null && !ownershipProofFile.isEmpty()) {
+		    ownershipProofUrl = UserUtils.storeVerificationDocument(ownershipProofFile, String.valueOf(user.getId()), "ownership_proof");
+		}
 		// Build submission
 		UserVerificationEntity verification = UserVerificationEntity.builder().user(user)
 				.idDocType(request.getIdDocType()).idDocNumber(request.getIdDocNumber()).idDocUrl(idDocUrl)
@@ -188,38 +189,59 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 	    try {
 	        List<UserEntity> admins = userRepository.findByRole("ROLE_ADMIN");
 	        if (admins.isEmpty()) {
-	            log.warn("No ROLE_ADMIN users found to notify for owner verification");
+	            log.warn("No ROLE_ADMIN users found to notify for verification");
 	            return;
 	        }
-	        String msg = "New owner verification request from " + owner.getFullName();
+
+	        // NAYA: role se tenant/owner decide karo
+	        boolean isTenant = "ROLE_TENANT".equalsIgnoreCase(owner.getRole());
+	        String who = isTenant ? "tenant" : "owner";
+	        String msg = "New " + who + " verification request from " + owner.getFullName();
+	        log.info("[VERIF-NOTIFY] submitter role='{}' | isTenant={} | who={} | msg='{}'",
+	                owner.getRole(), isTenant, who, msg);
+
 	        for (UserEntity admin : admins) {
 	            VerificationNotificationRequest req = VerificationNotificationRequest.builder()
-	                    .recipientId(admin.getUsername())   // bell isi username pe query karti hai
+	                    .recipientId(admin.getUsername())
 	                    .event("SUBMITTED")
 	                    .ownerId(owner.getUsername())
-	                    .message(msg)
+	                    .message(msg)                    // ab "tenant"/"owner" word aayega
+	                    .role(owner.getRole())           // NAYA: role field (agar DTO me hai)
 	                    .build();
 	            safeSendNotification(req, admin.getUsername());
 	        }
 	    } catch (Exception ex) {
-	        log.error("Failed to notify admins of owner verification submission | error={}", ex.getMessage());
+	        log.error("Failed to notify admins of verification submission | error={}", ex.getMessage());
 	    }
 	}
 
+
 	private void notifyOwnerOfDecision(UserEntity owner, UserVerificationEntity verification) {
-		try {
-			boolean verified = verification.getStatus() == OwnerVerificationStatus.VERIFIED;
-			VerificationNotificationRequest req = VerificationNotificationRequest.builder()
-					.recipientId(owner.getUsername()).event(verified ? "VERIFIED" : "REJECTED")
-					.ownerId(owner.getUsername())
-					.message(verified ? "Your owner verification was approved. You are now a Verified Owner."
-							: "Your owner verification was rejected.")
-					.reason(verified ? null : verification.getRejectionReason()).build();
-			safeSendNotification(req, owner.getUsername());
-		} catch (Exception ex) {
-			log.error("Failed to notify owner of verification decision | error={}", ex.getMessage());
-		}
+	    try {
+	        boolean verified = verification.getStatus() == OwnerVerificationStatus.VERIFIED;
+	        String message;
+	        if (verified) {
+	            message = "Your owner verification was approved. You are now a Verified Owner.";
+	        } else {
+	            // reject: reason ko message me include karo
+	            String reason = verification.getRejectionReason();
+	            message = "Your document was rejected. Reason: "
+	                    + (reason != null && !reason.isBlank() ? reason : "not specified")
+	                    + ". Please resubmit with a valid document.";
+	        }
+	        VerificationNotificationRequest req = VerificationNotificationRequest.builder()
+	                .recipientId(owner.getUsername())
+	                .event(verified ? "VERIFIED" : "REJECTED")
+	                .ownerId(owner.getUsername())
+	                .message(message)
+	                .reason(verified ? null : verification.getRejectionReason())
+	                .build();
+	        safeSendNotification(req, owner.getUsername());
+	    } catch (Exception ex) {
+	        log.error("Failed to notify owner of verification decision | error={}", ex.getMessage());
+	    }
 	}
+
 
 	private void safeSendNotification(VerificationNotificationRequest req, String recipient) {
 		try {

@@ -49,7 +49,7 @@ public class UserVerificationController {
 	public ResponseEntity<UserVerificationResponse> submitVerification(
 			@Valid @RequestPart("request") UserVerificationRequest request,
 			@RequestPart("idProofFile") MultipartFile idProofFile,
-			@RequestPart("ownershipProofFile") MultipartFile ownershipProofFile, Authentication authentication) {
+			@RequestPart(value="ownershipProofFile",required = false) MultipartFile ownershipProofFile, Authentication authentication) {
 
 		UserVerificationResponse response = verificationService.submitVerification(request, idProofFile,
 				ownershipProofFile, authentication);

@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 public class UserVerificationResponse{
 	private Long id;
 	private Long userId;
+	private String role;
 	private String fullName;
 	private String idDocType;
 	private String idDocNumber;

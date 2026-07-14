@@ -126,7 +126,8 @@ public class PhoneAuthServiceImpl implements PhoneAuthService {
 
 		user.setPhone(phone);
 		user.setPhoneVerified(true);
-		userRepository.save(user);
+		UserEntity save = userRepository.save(user);
+		log.info("******** after save ******** "+save);
 
 		log.info("Phone verified successfully | username={}", username);
 		return PasswordResetResponse.builder().success(true).message("Phone verified successfully").build();
