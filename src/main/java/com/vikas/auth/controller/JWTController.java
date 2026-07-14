@@ -15,6 +15,7 @@ import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.RefreshRequest;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.service.PasswordResetService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,7 +33,7 @@ import lombok.RequiredArgsConstructor;
  */
 
 @RestController
-@RequestMapping("/rent-hub/auth/jwt")
+@RequestMapping(ConstantsUtils.JWT)
 @RequiredArgsConstructor
 @Tag(
 	    name = "JWT APIs",

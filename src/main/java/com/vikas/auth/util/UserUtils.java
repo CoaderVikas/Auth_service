@@ -19,9 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class UserUtils {
 
-	public static final String CUSTOM_PERMANENT_DIR = "C:/tenants/images/";
+	//public static final String CUSTOM_PERMANENT_DIR = "C:/tenants/images/";
+	//public static final String VERIFICATION_PERMANENT_DIR = "E:/verification/images/";
 	
-	public static String storeTenantImage(MultipartFile file, String userid) {
+	public static String storeImage(MultipartFile file, String userid) {
 		Path permanentPath=null;
 		try {
 			// Extract file extension or default to .jpg
@@ -51,6 +52,39 @@ public class UserUtils {
 
 		} catch (IOException e) {
 			throw new AuthenticationServiceException("Failed to store tenant image: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Stores a verification document (ID proof / ownership proof) and returns the
+	 * stored path.
+	 *
+	 * @param file   uploaded document
+	 * @param userId owner/user id
+	 * @param docTag short tag to distinguish files e.g. "id_proof",
+	 *               "ownership_proof"
+	 * @return stored absolute path to persist in DB
+	 */
+	public static String storeVerificationDocument(MultipartFile file, String userId, String docTag) {
+		if (file == null || file.isEmpty()) {
+			throw new AuthenticationServiceException("Document file is missing or empty");
+		}
+		Path permanentPath;
+		try {
+			String originalFilename = file.getOriginalFilename();
+			String extension = originalFilename != null && originalFilename.contains(".")
+					? originalFilename.substring(originalFilename.lastIndexOf("."))
+					: ".jpg";
+
+			String uniqueFileName = userId + "_" + docTag + "_" + System.currentTimeMillis() + extension;
+
+			String tempDir = System.getProperty("java.io.tmpdir");
+			permanentPath = Paths.get(tempDir, uniqueFileName);
+			Files.copy(file.getInputStream(), permanentPath, StandardCopyOption.REPLACE_EXISTING);
+
+			return permanentPath.toString();
+		} catch (IOException e) {
+			throw new AuthenticationServiceException("Failed to store verification document: " + e.getMessage());
 		}
 	}
 	

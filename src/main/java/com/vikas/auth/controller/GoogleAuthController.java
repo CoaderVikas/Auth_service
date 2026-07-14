@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vikas.auth.dto.GoogleAuthRequest;
 import com.vikas.auth.dto.GoogleAuthResponse;
 import com.vikas.auth.service.GoogleAuthService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @RestController
-@RequestMapping("/rent-hub/auth/auth")
+@RequestMapping(ConstantsUtils.API_V1)
 @RequiredArgsConstructor
 @Slf4j
 public class GoogleAuthController {

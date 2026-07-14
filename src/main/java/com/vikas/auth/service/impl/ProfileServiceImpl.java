@@ -123,7 +123,7 @@ public class ProfileServiceImpl implements ProfileService {
 			log.info("Profile updated for user: {}", username);
 		}
 		if (file != null && !file.isEmpty()) {
-			String savedPhotoPath = UserUtils.storeTenantImage(file, username);
+			String savedPhotoPath = UserUtils.storeImage(file, username);
 			user.setPhotoUrl(savedPhotoPath);
 		}
 
@@ -143,10 +143,12 @@ public class ProfileServiceImpl implements ProfileService {
 	private UserProfileResponse mapToResponse(UserEntity user) {
 		log.info("Mapping UserEntity to UserProfileResponse for username: {}", user.getUsername());
 		return UserProfileResponse.builder().fullName(user.getFullName()).username(user.getUsername())
-				.email(user.getEmail()).role(user.getRole()).enabled(user.getEnabled())
+				.email(user.getEmail()).phone(user.getPhone()).role(user.getRole()).enabled(user.getEnabled())
 				.photoUrl(user.getPhotoUrl())
 				.accountNonLocked(user.getAccountNonLocked()).failedLoginAttempts(user.getFailedLoginAttempts())
-				.passwordLastUpdatedAt(user.getPasswordLastUpdatedAt()).build();
+				.passwordLastUpdatedAt(user.getPasswordLastUpdatedAt())
+				.phoneVerified(user.getPhoneVerified())
+				.build();
 	}
 
 	

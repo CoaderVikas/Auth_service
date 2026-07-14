@@ -10,6 +10,13 @@ package com.vikas.auth.util;
 
 public interface ConstantsUtils {
 	
+	public static final String API_V1 = "/rent-hub/api/v1/v2/auth";
+	 public static final String VERIFICATIONS = API_V1 + "/verifications";
+	 public static final String ADMIN = API_V1 + "/admin";
+	 public static final String PASSWORD = API_V1 + "/password";
+	 public static final String JWT = API_V1 + "/jwt";
+	 public static final String PROFILE = API_V1 + "/profile";
+	 public static final String PHONE = API_V1 + "/phone";
 	static final int OTP_EXPIRY_MINUTES = 5;
 	static final int MAX_OTP_ATTEMPTS = 3;
 	static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;

@@ -10,6 +10,7 @@ package com.vikas.auth.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,18 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.PasswordResetResponse;
 import com.vikas.auth.service.PhoneAuthService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
-@RequestMapping("/rent-hub/auth/phone")
+@RequestMapping(ConstantsUtils.PHONE)
 @RequiredArgsConstructor
 @Tag(name = "Phone Auth APIs", description = "Firebase phone-OTP login and password reset")
 public class PhoneAuthController {
@@ -56,11 +59,18 @@ public class PhoneAuthController {
 				request.getNewPassword());
 		return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
 	}
+	
+	@PostMapping("/verify")
+	public ResponseEntity<PasswordResetResponse> verifyMyPhone(@Valid @RequestBody PhoneLoginRequest req, Authentication authentication) {
+		String username = authentication.getName(); // JWT se
+		PasswordResetResponse response = phoneAuthService.verifyPhoneForUser(username, req.getFirebaseIdToken());
+		return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
+	}
 
 
 	@Data
 	public static class PhoneLoginRequest {
-		@NotBlank
+		 @NotBlank(message = "Firebase ID token is required")
 		private String firebaseIdToken;
 	}
 

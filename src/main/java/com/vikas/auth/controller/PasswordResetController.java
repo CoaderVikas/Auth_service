@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vikas.auth.dto.PasswordResetRequest;
 import com.vikas.auth.dto.PasswordResetResponse;
 import com.vikas.auth.service.PasswordResetService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/rent-hub/auth/password")
+@RequestMapping(ConstantsUtils.PASSWORD)
 @RequiredArgsConstructor
 @Tag(name = "Password Reset APIs", description = "APIs for forgot password and reset password using OTP")
 public class PasswordResetController {

@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.vikas.auth.dto.UpdateProfileRequest;
 import com.vikas.auth.dto.UserProfileResponse;
 import com.vikas.auth.service.ProfileService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  * Handles authenticated user profile operations.
  */
 @RestController
-@RequestMapping("/rent-hub/auth/profile")
+@RequestMapping(ConstantsUtils.PROFILE)
 @RequiredArgsConstructor
 @Validated
 @Slf4j

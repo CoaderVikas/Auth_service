@@ -2,8 +2,23 @@ package com.vikas.auth.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.vikas.enums.OwnerVerificationStatus;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Class : UserEntity Description: Stores permanent authentication and security
@@ -45,6 +60,10 @@ public class UserEntity extends AuditableEntity {
 	@Column(nullable = false)
 	@Builder.Default
 	private Boolean phoneVerified = false;
+	
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean emailVerified = false;
 
 	@Column(nullable = false)
 	@Builder.Default
@@ -80,4 +99,9 @@ public class UserEntity extends AuditableEntity {
 
 	@Column(name = "photo_url", columnDefinition = "TEXT")
 	private String photoUrl;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20)
+	@Builder.Default
+	private OwnerVerificationStatus ownerVerificationStatus = OwnerVerificationStatus.NOT_SUBMITTED;
 }

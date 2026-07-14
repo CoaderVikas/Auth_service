@@ -34,4 +34,13 @@ public interface PhoneAuthService {
 	 * @return PasswordResetResponse
 	 */
 	PasswordResetResponse resetPasswordWithPhone(String firebaseIdToken, String newPassword);
+	/**
+	 * Logged-in user ke phone ko verify karke DB me phoneVerified=true set karta hai.
+	 * Token verify -> phone nikaalo -> current user pe set karo.
+	 *
+	 * @param username        current logged-in user (JWT se)
+	 * @param firebaseIdToken frontend Firebase ID token (OTP verify ke baad)
+	 * @return verified 10-digit phone number
+	 */
+	PasswordResetResponse verifyPhoneForUser(String username, String firebaseIdToken);
 }

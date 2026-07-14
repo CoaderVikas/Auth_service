@@ -33,90 +33,102 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PhoneAuthServiceImpl implements PhoneAuthService {
 
-    private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtProvider;
-    private final FirebasePhoneService firebasePhoneService;
+	private final UserRepository userRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtService jwtProvider;
+	private final FirebasePhoneService firebasePhoneService;
 
-    @Override
-    public LoginResponse loginWithPhone(String firebaseIdToken) {
-        // 1. Token verify + phone nikaalo (verified truth)
-        String phone = firebasePhoneService.verifyAndGetPhone(firebaseIdToken);
-        log.info("Phone login attempt | phone={}", phone);
+	@Override
+	public LoginResponse loginWithPhone(String firebaseIdToken) {
+		// 1. Token verify + phone nikaalo (verified truth)
+		String phone = firebasePhoneService.verifyAndGetPhone(firebaseIdToken);
+		log.info("Phone login attempt | phone={}", phone);
 
-        // 2. Us phone wala user dhoondo
-        UserEntity user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> {
-                    log.warn("Phone login failed: no account for phone={}", phone);
-                    return new AuthServiceException("No Account Found for this Number.");
-                });
+		// 2. Us phone wala user dhoondo
+		UserEntity user = userRepository.findByPhone(phone).orElseThrow(() -> {
+			log.warn("Phone login failed: no account for phone={}", phone);
+			return new AuthServiceException("No Account Found for this Number.");
+		});
 
-        // 3. Account status
-        if (!user.getEnabled() || !user.getAccountNonLocked()) {
-            log.warn("Phone login blocked: locked/disabled | username={}", user.getUsername());
-            throw new AuthServiceException("Account is locked or disabled");
-        }
+		// 3. Account status
+		if (!user.getEnabled() || !user.getAccountNonLocked()) {
+			log.warn("Phone login blocked: locked/disabled | username={}", user.getUsername());
+			throw new AuthServiceException("Account is locked or disabled");
+		}
 
-        // 4. Success -> reset failed attempts, tokens do
-        user.setFailedLoginAttempts(0);
-        userRepository.save(user);
+		// 4. Success -> reset failed attempts, tokens do
+		user.setFailedLoginAttempts(0);
+		userRepository.save(user);
 
-        String accessToken = jwtProvider.generateToken(
-                user.getUsername(), user.getRole(), user.getPasswordVersion(), user.getFullName());
-        String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole());
-        saveRefreshToken(user, refreshToken);
+		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),
+				user.getFullName());
+		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole());
+		saveRefreshToken(user, refreshToken);
 
-        log.info("Phone login successful | username={}, role={}", user.getUsername(), user.getRole());
-        return LoginResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .username(user.getUsername())
-                .role(user.getRole())
-                .build();
-    }
+		log.info("Phone login successful | username={}, role={}", user.getUsername(), user.getRole());
+		return LoginResponse.builder().token(accessToken).refreshToken(refreshToken).username(user.getUsername())
+				.role(user.getRole()).build();
+	}
 
-    @Override
-    public PasswordResetResponse resetPasswordWithPhone(String firebaseIdToken, String newPassword) {
-        if (newPassword == null || newPassword.isBlank()) {
-            return PasswordResetResponse.builder().success(false).message("New password required").build();
-        }
+	@Override
+	public PasswordResetResponse resetPasswordWithPhone(String firebaseIdToken, String newPassword) {
+		if (newPassword == null || newPassword.isBlank()) {
+			return PasswordResetResponse.builder().success(false).message("New password required").build();
+		}
 
-        // 1. Token verify + phone
-        String phone = firebasePhoneService.verifyAndGetPhone(firebaseIdToken);
-        log.info("Phone password reset | phone={}", phone);
+		// 1. Token verify + phone
+		String phone = firebasePhoneService.verifyAndGetPhone(firebaseIdToken);
+		log.info("Phone password reset | phone={}", phone);
 
-        // 2. User dhoondo
-        UserEntity user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new AuthServiceException("No Account Found for this Number"));
+		// 2. User dhoondo
+		UserEntity user = userRepository.findByPhone(phone)
+				.orElseThrow(() -> new AuthServiceException("No Account Found for this Number"));
 
-        // 3. Account status
-        if (!user.getEnabled())
-            return PasswordResetResponse.builder().success(false).message("Account disabled").build();
-        if (!user.getAccountNonLocked())
-            return PasswordResetResponse.builder().success(false).message("Account locked").build();
+		// 3. Account status
+		if (!user.getEnabled())
+			return PasswordResetResponse.builder().success(false).message("Account disabled").build();
+		if (!user.getAccountNonLocked())
+			return PasswordResetResponse.builder().success(false).message("Account locked").build();
 
-        // 4. Password reset (email-OTP flow jaise hi version bump + timestamps)
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setPasswordVersion(user.getPasswordVersion() + 1);
-        user.setPasswordLastUpdatedAt(LocalDateTime.now());
-        user.setFailedLoginAttempts(0);
-        userRepository.save(user);
+		// 4. Password reset (email-OTP flow jaise hi version bump + timestamps)
+		user.setPassword(passwordEncoder.encode(newPassword));
+		user.setPasswordVersion(user.getPasswordVersion() + 1);
+		user.setPasswordLastUpdatedAt(LocalDateTime.now());
+		user.setFailedLoginAttempts(0);
+		userRepository.save(user);
 
-        log.info("Phone password reset successful | username={}", user.getUsername());
-        return PasswordResetResponse.builder()
-                .success(true)
-                .message("Password reset successfully, please login again")
-                .build();
-    }
+		log.info("Phone password reset successful | username={}", user.getUsername());
+		return PasswordResetResponse.builder().success(true).message("Password reset successfully, please login again")
+				.build();
+	}
 
-    private void saveRefreshToken(UserEntity user, String refreshToken) {
-        RefreshTokenEntity entity = RefreshTokenEntity.builder()
-                .token(refreshToken)
-                .user(user)
-                .expiryDate(LocalDateTime.now().plusDays(7))
-                .revoked(false)
-                .build();
-        refreshTokenRepository.save(entity);
-    }
+	private void saveRefreshToken(UserEntity user, String refreshToken) {
+		RefreshTokenEntity entity = RefreshTokenEntity.builder().token(refreshToken).user(user)
+				.expiryDate(LocalDateTime.now().plusDays(7)).revoked(false).build();
+		refreshTokenRepository.save(entity);
+	}
+
+	@Override
+	@Transactional
+	public PasswordResetResponse verifyPhoneForUser(String username, String firebaseIdToken) {
+		String phone = firebasePhoneService.verifyAndGetPhone(firebaseIdToken);
+		log.info("Phone verify request | username={}, phone={}", username, phone);
+
+		UserEntity user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new AuthServiceException("User not found"));
+
+		userRepository.findByPhone(phone).ifPresent(other -> {
+			if (!other.getId().equals(user.getId())) {
+				throw new AuthServiceException("This phone number is already in use");
+			}
+		});
+
+		user.setPhone(phone);
+		user.setPhoneVerified(true);
+		userRepository.save(user);
+
+		log.info("Phone verified successfully | username={}", username);
+		return PasswordResetResponse.builder().success(true).message("Phone verified successfully").build();
+	}
 }

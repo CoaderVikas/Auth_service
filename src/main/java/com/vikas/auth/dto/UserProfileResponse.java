@@ -20,14 +20,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileResponse {
-    private String fullName;
-    private String username;
-    private String email;
-    private String role;
-    private Boolean enabled;
-    private String photoUrl;
-    private Boolean accountNonLocked;
-    private Integer failedLoginAttempts;
-    private LocalDateTime passwordLastUpdatedAt;
-    private String message;
+	private String fullName;
+	private String username;
+	private String email;
+	private String phone;
+	private boolean phoneVerified;
+	private String role;
+	private Boolean enabled;
+	private String photoUrl;
+	private Boolean accountNonLocked;
+	private Integer failedLoginAttempts;
+	private LocalDateTime passwordLastUpdatedAt;
+	private String message;
 }

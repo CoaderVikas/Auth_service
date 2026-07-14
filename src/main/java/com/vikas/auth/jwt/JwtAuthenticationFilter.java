@@ -35,12 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 	
 	private static final List<String> PUBLIC_PATHS = List.of(
-		    "/rent-hub/auth/auth/", 
-		    "/rent-hub/auth/password/",
-		    "/rent-hub/auth/password/reset",
-		    "/rent-hub/auth/jwt/refresh",
-		    "/rent-hub/auth/jwt/logout",
-		    "/rent-hub/auth/phone/",
+		    "/rent-hub/api/v1/v2/auth/password/",
+		    "/rent-hub/api/v1/v2/auth/password/reset",
+		    "/rent-hub/api/v1/v2/auth/jwt/refresh",
+		    "/rent-hub/api/v1/v2/auth/jwt/logout",
+		    "/rent-hub/api/v1/v2/auth/phone/reset/",
+		    "/rent-hub/api/v1/v2/auth/phone/login-otp/",
 		    "/swagger-ui/",
 		    "/swagger-ui.html",
 		    "/v3/api-docs",

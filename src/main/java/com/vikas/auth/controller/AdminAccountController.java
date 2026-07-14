@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.vikas.auth.dto.PaginatedUserResponse;
 import com.vikas.auth.service.AdminAccountService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
-@RequestMapping("/rent-hub/auth/admin")
+@RequestMapping(ConstantsUtils.ADMIN)
 @Tag(name = "Admin Account Management", description = "APIs for managing user accounts by ADMIN")
 public class AdminAccountController {
 

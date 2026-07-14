@@ -13,6 +13,7 @@ import com.vikas.auth.dto.LoginRequest;
 import com.vikas.auth.dto.LoginResponse;
 import com.vikas.auth.dto.RegisterRequest;
 import com.vikas.auth.service.AuthService;
+import com.vikas.auth.util.ConstantsUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  */
 
 @RestController
-@RequestMapping("/rent-hub/auth/auth")
+@RequestMapping(ConstantsUtils.API_V1)
 @RequiredArgsConstructor
 @Tag(
 	    name = "Auth APIs",
