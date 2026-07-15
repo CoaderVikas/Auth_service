@@ -75,7 +75,7 @@ public class JwtService {
 				.claim("pwdv", passwordVersion)
 				.claim("type", "ACCESS")
 				.claim("name", name)
-				.claim("verified", verified)
+				.claim("VERIFIED", verified)
 
 				// Sign with HS256 algorithm
 				.signWith(signingKey, SignatureAlgorithm.HS256).compact();

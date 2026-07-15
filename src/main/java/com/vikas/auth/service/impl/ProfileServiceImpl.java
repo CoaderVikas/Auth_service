@@ -29,6 +29,7 @@ import com.vikas.auth.exception.AuthServiceException;
 import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.ProfileService;
 import com.vikas.auth.util.UserUtils;
+import com.vikas.enums.OwnerVerificationStatus;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -147,7 +148,9 @@ public class ProfileServiceImpl implements ProfileService {
 				.photoUrl(user.getPhotoUrl())
 				.accountNonLocked(user.getAccountNonLocked()).failedLoginAttempts(user.getFailedLoginAttempts())
 				.passwordLastUpdatedAt(user.getPasswordLastUpdatedAt())
+				.emailVerified(user.getEmailVerified())
 				.phoneVerified(user.getPhoneVerified())
+				.ownerVerified(user.getOwnerVerificationStatus() == OwnerVerificationStatus.VERIFIED)
 				.build();
 	}
 

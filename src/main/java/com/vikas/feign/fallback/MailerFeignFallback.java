@@ -24,4 +24,12 @@ public class MailerFeignFallback implements MailerFeignClient {
                 .message("Mailer service is down")
                 .build();
     }
+
+	@Override
+	public MailResponse sendVerificationMail(MailRequest request) {
+		return MailResponse.builder()
+                .success(false)
+                .message("Mailer service is down")
+                .build();
+	}
 }

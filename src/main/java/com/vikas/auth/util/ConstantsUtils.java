@@ -17,6 +17,7 @@ public interface ConstantsUtils {
 	 public static final String JWT = API_V1 + "/jwt";
 	 public static final String PROFILE = API_V1 + "/profile";
 	 public static final String PHONE = API_V1 + "/phone";
+	 public static final String EMAIL = API_V1 + "/email";
 	 public static final String ID_PROOF="ID_PROOF";
 	static final int OTP_EXPIRY_MINUTES = 5;
 	static final int MAX_OTP_ATTEMPTS = 3;

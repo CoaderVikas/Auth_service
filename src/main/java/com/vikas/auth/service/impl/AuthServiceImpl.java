@@ -97,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
 		} catch (Exception e) {
 		    log.error("Failed to publish user registration event | email={}", user.getEmail(), e);
 		}
+		System.err.println("user.getOwnerVerificationStatus().name()"+user.getOwnerVerificationStatus().name());
 		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getOwnerVerificationStatus().name(),user.getRole(), user.getPasswordVersion(),user.getFullName());
 		
 		return LoginResponse.builder().token(accessToken).username(user.getUsername())
@@ -126,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
 
 		user.setFailedLoginAttempts(0);
 		userRepository.save(user);
-
+		System.err.println("user.getOwnerVerificationStatus().name()"+user.getOwnerVerificationStatus().name());
 		String accessToken = jwtProvider.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(), user.getPasswordVersion(),user.getFullName());
 		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, refreshToken);
@@ -153,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
 		UserEntity user = storedToken.getUser();
 		storedToken.setRevoked(true);
 		refreshTokenRepository.save(storedToken);
-
+		System.err.println("user.getOwnerVerificationStatus().name()"+user.getOwnerVerificationStatus().name());
 		String newAccessToken = jwtProvider.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(),
 				user.getPasswordVersion(),user.getFullName());
 		String newRefreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());

@@ -15,7 +15,7 @@ import com.vikas.feign.fallback.MailerFeignFallback;
  * Created On : Feb 22, 2026
  * Version    : 1.0
  */
-@FeignClient(name = "MAILER-SERVICE",path = "/api/mail",fallback = MailerFeignFallback.class)
+@FeignClient(name = "MAILER-SERVICE",path = "/api/v1/mail",fallback = MailerFeignFallback.class)
 public interface MailerFeignClient {
 	
 	/**
@@ -25,5 +25,12 @@ public interface MailerFeignClient {
 	 */
 	@PostMapping("/send")
 	public MailResponse sendMail(@RequestBody MailRequest request);
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/verify")
+	public MailResponse sendVerificationMail(MailRequest request);
 
 }
