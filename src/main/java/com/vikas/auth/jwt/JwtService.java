@@ -58,7 +58,7 @@ public class JwtService {
 	 * @param passwordVersion used to invalidate old tokens after password change
 	 * @return signed JWT token
 	 */
-	public String generateToken(String username, String role, Integer passwordVersion,String name) {
+	public String generateToken(String username,String verified, String role, Integer passwordVersion,String name) {
 
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + expiration);
@@ -75,6 +75,7 @@ public class JwtService {
 				.claim("pwdv", passwordVersion)
 				.claim("type", "ACCESS")
 				.claim("name", name)
+				.claim("verified", verified)
 
 				// Sign with HS256 algorithm
 				.signWith(signingKey, SignatureAlgorithm.HS256).compact();

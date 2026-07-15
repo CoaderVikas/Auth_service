@@ -17,6 +17,7 @@ import com.vikas.auth.repository.UserRepository;
 import com.vikas.auth.service.AuthService;
 import com.vikas.auth.service.FirebasePhoneService;
 import com.vikas.auth.util.ConstantsUtils;
+import com.vikas.enums.OwnerVerificationStatus;
 import com.vikas.event.UserRegisteredEvent;
 import com.vikas.kafka.producer.UserEventProducer;
 
@@ -96,8 +97,8 @@ public class AuthServiceImpl implements AuthService {
 		} catch (Exception e) {
 		    log.error("Failed to publish user registration event | email={}", user.getEmail(), e);
 		}
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),user.getFullName());
-
+		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getOwnerVerificationStatus().name(),user.getRole(), user.getPasswordVersion(),user.getFullName());
+		
 		return LoginResponse.builder().token(accessToken).username(user.getUsername())
 				.message("Account created successfully").role(user.getRole()).build();
 	}
@@ -126,7 +127,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setFailedLoginAttempts(0);
 		userRepository.save(user);
 
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),user.getFullName());
+		String accessToken = jwtProvider.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(), user.getPasswordVersion(),user.getFullName());
 		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, refreshToken);
 
@@ -153,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
 		storedToken.setRevoked(true);
 		refreshTokenRepository.save(storedToken);
 
-		String newAccessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(),
+		String newAccessToken = jwtProvider.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(),
 				user.getPasswordVersion(),user.getFullName());
 		String newRefreshToken = jwtProvider.generateRefreshToken(user.getUsername(),user.getRole());
 		saveRefreshToken(user, newRefreshToken);

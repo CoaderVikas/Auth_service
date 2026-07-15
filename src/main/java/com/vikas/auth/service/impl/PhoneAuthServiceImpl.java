@@ -61,7 +61,7 @@ public class PhoneAuthServiceImpl implements PhoneAuthService {
 		user.setFailedLoginAttempts(0);
 		userRepository.save(user);
 
-		String accessToken = jwtProvider.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),
+		String accessToken = jwtProvider.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(), user.getPasswordVersion(),
 				user.getFullName());
 		String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole());
 		saveRefreshToken(user, refreshToken);

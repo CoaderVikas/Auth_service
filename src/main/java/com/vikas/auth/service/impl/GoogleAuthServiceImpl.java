@@ -69,7 +69,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
 			log.info("Existing Google user logged in: {}", email);
 		}
 
-		String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getPasswordVersion(),
+		String token = jwtService.generateToken(user.getUsername(),user.getOwnerVerificationStatus().name(), user.getRole(), user.getPasswordVersion(),
 				user.getFullName());
 
 		return new GoogleAuthResponse(token, user.getRole(), user.getUsername(), user.getFullName());
