@@ -147,4 +147,9 @@ public class ProfileController {
 			return ResponseEntity.notFound().build();
 		}
 	}
+	
+	@GetMapping("/by-username/{username}")
+	public ResponseEntity<UserProfileResponse> getProfileByUsername(@PathVariable("username") String username) {
+	    return ResponseEntity.ok(profileService.getMyProfile(username));
+	}
 }
