@@ -75,7 +75,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 3️⃣ Extract token
 		String token = authHeader.substring(7);
-		logger.info("*********** JWT token received ***********");
 
 		// 4️⃣ Validate token
 		if (!jwt.isTokenValid(token)) {
@@ -87,11 +86,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		// 5️⃣ Extract username and role
 		String username = jwt.extractUsername(token);
 		String role = jwt.extractRole(token);
-		logger.info("*********** Token details - username: {}, role: {} ***********", username, role);
-
+		
 		// 6️⃣ Set authorities
 		List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.trim()));
-		logger.info("*********** Granted Authorities: {} ***********", authorities);
 
 		// 7️⃣ Set authentication in SecurityContext
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
