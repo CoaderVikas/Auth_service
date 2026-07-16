@@ -148,8 +148,11 @@ public class ProfileController {
 		}
 	}
 	
+	@Operation(summary = "Get Profile By Username", description = "fetches a profile by username without requiring it to be the caller's own")
 	@GetMapping("/by-username/{username}")
 	public ResponseEntity<UserProfileResponse> getProfileByUsername(@PathVariable("username") String username) {
-	    return ResponseEntity.ok(profileService.getMyProfile(username));
+		log.info("Internal profile lookup requested for username: {}", username);
+		UserProfileResponse response = profileService.getMyProfile(username);
+		return ResponseEntity.ok(response);
 	}
 }
