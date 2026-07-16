@@ -10,7 +10,7 @@ package com.vikas.auth.util;
 
 public interface ConstantsUtils {
 	
-	public static final String API_V1 = "/rent-hub/api/v1/v2/auth";
+	public static final String API_V1 = "/rent-hub/api/v1/auth";
 	 public static final String VERIFICATIONS = API_V1 + "/verifications";
 	 public static final String ADMIN = API_V1 + "/admin";
 	 public static final String PASSWORD = API_V1 + "/password";
