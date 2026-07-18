@@ -7,9 +7,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Description: this class is responsible for logging method execution
@@ -19,10 +19,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Aspect
+@Slf4j
 public class LoggingAspect {
 
-	private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
-	
 	@Around(
 		    "execution(* com.vikas.auth.service..*(..)) || " +
 		    "execution(* com.vikas.auth.repository..*(..)) || " +
@@ -36,15 +35,14 @@ public class LoggingAspect {
 		String methodName = joinPoint.getSignature().getName();
 		Object[] args = joinPoint.getArgs();
 		long startTime = System.currentTimeMillis();
-
 		try {
-			log.info("**** ENTER | {}.{}() | args={}", className, methodName, Arrays.toString(args));
+			log.info("Auth ===> ENTER : {}.{}() | args={}", className, methodName, Arrays.toString(args));
 			Object result = joinPoint.proceed();
 			long endTime = System.currentTimeMillis();
-			log.info("**** EXIT  | {}.{}() | time={} ms", className, methodName, (endTime - startTime));
+			log.info("Auth <=== EXIT  : {}.{}() | executionTime={}ms", className, methodName, (endTime - startTime));
 			return result;
 		} catch (Exception e) {
-			log.error("**** ERROR | {}.{}() | exception={}", className, methodName, e.getMessage(), e);
+			log.error("Auth <=== ERROR : {}.{}() | exception={}", className, methodName, e.getMessage(), e);
 			throw e;
 		}
 	}
