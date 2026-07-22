@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		    "/rent-hub/api/v1/auth/jwt/refresh",
 		    "/rent-hub/api/v1/auth/jwt/logout",
 		    "/rent-hub/api/v1/auth/phone/reset/",
-		    "/rent-hub/api/v1/auth/phone/login-otp/",
+		    "/rent-hub/api/v1/auth/phone/login-otp",
 		    "/rent-hub/api/v1/auth/login",
 		    "/rent-hub/api/v1/auth/register",
 		    "/swagger-ui/",
