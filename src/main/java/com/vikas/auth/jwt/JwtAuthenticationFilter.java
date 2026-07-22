@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final List<String> PUBLIC_PATHS = List.of(
 		    "/rent-hub/api/v1/auth/password/",
 		    "/rent-hub/api/v1/auth/password/reset",
+		   "/rent-hub/api/v1/auth/phone/reset",
 		    "/rent-hub/api/v1/auth/jwt/refresh",
 		    "/rent-hub/api/v1/auth/jwt/logout",
 		    "/rent-hub/api/v1/auth/phone/reset/",

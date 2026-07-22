@@ -105,7 +105,7 @@ management:
 # ================================
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 900000
+  expiration: 3600000
   issuer: vikas-app
 
 #eureka:
