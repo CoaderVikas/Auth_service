@@ -52,7 +52,7 @@ public class UserEntity extends AuditableEntity {
 	private String email;
 
 	@Column(nullable = false, length = 50)
-	private String role; // ROLE_USER / ROLE_ADMIN
+	private String role;
 
 	@Column(unique = true, length = 15)
 	private String phone; 

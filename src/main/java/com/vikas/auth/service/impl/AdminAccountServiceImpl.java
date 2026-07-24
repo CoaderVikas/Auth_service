@@ -112,7 +112,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 		UserEntity user = getUser(userId);
 
 		// Validate role
-		if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN")) {
+		if (!role.equals("USER") && !role.equals("ADMIN")) {
 			throw new AuthServiceException("Invalid role");
 		}
 

@@ -187,14 +187,14 @@ public class UserVerificationServiceImpl implements UserVerificationService {
 	// ===================== NOTIFICATION =====================
 	private void notifyAdminsOfSubmission(UserEntity owner) {
 	    try {
-	        List<UserEntity> admins = userRepository.findByRole("ROLE_ADMIN");
+	        List<UserEntity> admins = userRepository.findByRole("ADMIN");
 	        if (admins.isEmpty()) {
-	            log.warn("No ROLE_ADMIN users found to notify for verification");
+	            log.warn("No ADMIN users found to notify for verification");
 	            return;
 	        }
 
 	        // NAYA: role se tenant/owner decide karo
-	        boolean isTenant = "ROLE_TENANT".equalsIgnoreCase(owner.getRole());
+	        boolean isTenant = "TENANT".equalsIgnoreCase(owner.getRole());
 	        String who = isTenant ? "tenant" : "owner";
 	        String msg = "New " + who + " verification request from " + owner.getFullName();
 	        log.info("[VERIF-NOTIFY] submitter role='{}' | isTenant={} | who={} | msg='{}'",
